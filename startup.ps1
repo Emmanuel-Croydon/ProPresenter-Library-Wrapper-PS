@@ -3,6 +3,8 @@ $ProPresenter = 'C:\Program Files (x86)\Renewed Vision\ProPresenter 6\ProPresent
 $LibraryPath = 'E:\Jon\Workspace\TestRepo\ProPresenter-Test-Library'
 $RepoLocation = 'Jonathan-Mash/ProPresenter-Test-Library'
 
+Set-ExecutionPolicy RemoteSigned -Scope Process
+
 $response = Wait-ForUserResponse('Re-sync ProPresenter library with master database? (y/n)')
 
 if ($response -eq 'y') {
