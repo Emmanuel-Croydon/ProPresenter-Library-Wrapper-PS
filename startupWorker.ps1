@@ -19,7 +19,7 @@ while (($repeat -eq $true) -or ($firstTry -eq $true)) {
     } elseIf ($response -eq 'n') {
         $proc = Start-ProPresenter
     } elseIf ($response -eq 'r') {
-        $BranchName = git -C $env:PPLibraryPath branch
+        $BranchName = git -C $env:PPLibraryPath rev-parse --abbrev-ref HEAD
 
         if ($BranchName -eq 'master') {
             Write-Host 'Could not find any changes to retry adding to master library'
