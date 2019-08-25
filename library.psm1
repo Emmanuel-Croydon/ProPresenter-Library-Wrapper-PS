@@ -3,7 +3,6 @@
 # ==================================================================================================
 #
 
-#TODO: Error handling doesn't work properly
 #TODO: Check if change is only UUIDs
 #TODO: Can I do this without polling?
 #TODO: Make prettier
@@ -26,9 +25,13 @@ function Sync-MasterLibrary {
         {
             $firstTry = $false
             git -C $env:PPLibraryPath pull | Write-Host
-            Write-Host 'Completed.'
+            if(-not $?) {
+                throw "Failed to sync with master library. Please check your network connection and then retry.`r`n If network is currently unavailable, please enter 'r' for retry next time you start the app with a network connection.`r`n If the problem persists, please contact support."
+            } else {
+                Write-Host 'Completed.'
+            }
         } catch {
-            Write-Host "Failed to sync with master library. Please check your network connection and then retry.`r`n If network is currently unavailable, please enter 'r' for retry next time you start the app with a network connection.`r`n If the problem persists, please contact support."
+            Write-Error $($PSItem.ToString())
             $retry = Wait-ForUserResponse('Retry?')
         }
     }
@@ -151,11 +154,16 @@ function Invoke-BranchPush {
         {
             $firstTry = $false
             git -C $env:PPLibraryPath push --set-upstream origin $BranchName | Write-Host
-            Write-Host "Created branch $BranchName"
+
+            if(-not $?) {
+                throw "Failed to push change. Please check your network connection and then retry.`r`n If network is currently unavailable, please enter 'r' for retry next time you start the app with a network connection.`r`n If the problem persists, please contact support."
+            } else {
+                Write-Host "Created branch $BranchName"
+            }
         } catch {
-            Write-Host "Failed to push change. Please check your network connection and then retry.`r`n If network is currently unavailable, please enter 'r' for retry next time you start the app with a network connection.`r`n If the problem persists, please contact support."
+            Write-Error $($PSItem.ToString())
             $retry = Wait-ForUserResponse('Retry?')
-        }
+        } 
     }
 }
 
@@ -184,11 +192,17 @@ function Invoke-ChangePush {
         {
             $firstTry = $false
             git -C $env:PPLibraryPath push | Write-Host
-            Write-Host "Pushed branch $BranchName"
+            
+
+            if(-not $?) {
+                throw "Failed to push changes. Please check your network connection and then retry.`r`n If network is currently unavailable, please enter 'r' for retry next time you start the app with a network connection.`r`n If the problem persists, please contact support."
+            } else {
+                Write-Host "Pushed branch $BranchName"
+            }
         } catch {
-            Write-Host "Failed to push changes. Please check your network connection and then retry.`r`n If network is currently unavailable, please enter 'r' for retry next time you start the app with a network connection.`r`n If the problem persists, please contact support."
+            Write-Error $($PSItem.ToString())
             $retry = Wait-ForUserResponse('Retry?')
-        }
+        } 
     }
 }
 
@@ -225,7 +239,7 @@ function New-PullRequest {
     }
     catch
     {
-        Write-Host "An error has occurred. Please give the support team the following information to add your changes: $BranchName"
+        Write-Error "An error has occurred. Please give the support team the following information to add your changes: $BranchName"
     }
 }
 

@@ -29,12 +29,10 @@ $envVars | forEach-Object {
         $Value = (get-item env:$_ -ErrorAction Stop).Value
 
         if ($Value -eq $null) {
-            Write-Host 'An error has occurred with the installation of the ProPresenter Library Wrapper. Please contact support.'
-            Remove-LockFile
-            exit
+            Throw 
         }
     } catch {
-        Write-Host 'An error has occurred with the installation of the ProPresenter Library Wrapper. Please contact support.'
+        Write-Error 'An error has occurred with the installation of the ProPresenter Library Wrapper. Please contact support.'
         Remove-LockFile
         exit
     }

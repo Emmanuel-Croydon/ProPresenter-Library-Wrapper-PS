@@ -35,7 +35,7 @@ function Get-AuthToken {
         $Token = Invoke-RestMethod -Uri $GitHubAuthUri -Method 'Post'-ContentType 'application/json' -Headers $AuthHeaders -Body ($AuthBody | ConvertTo-Json) -ErrorAction Stop
         Write-Host "Successfully added Github API authentication."
     } catch {
-        Write-Host "Failed to add authentication. Please check your credentials and your network connection then retry."
+        Write-Error "Failed to add authentication. Please check your credentials and your network connection then retry."
         Start-Sleep(5)
         exit
     }
@@ -53,7 +53,7 @@ function Add-EnvironmentVariable {
     try {
         [Environment]::SetEnvironmentVariable($VariableName, $VariableValue, 'User')
     } catch {
-        Write-Host "Failed to set environment variable $VariableName"
+        Write-Error "Failed to set environment variable $VariableName"
         Start-Sleep(5)
         exit
     }
