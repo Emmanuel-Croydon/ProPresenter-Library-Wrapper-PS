@@ -10,6 +10,7 @@ $firstTry = $true
 
 while (($repeat -eq $true) -or ($firstTry -eq $true)) {
     $firstTry = $false
+    $repeat = $false
 
     $response = Wait-ForUserResponse -UserActionRequired 'Re-sync ProPresenter library with master database? (y/n)' -ValidResponses @('y', 'n', 'r')
 

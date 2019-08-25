@@ -258,4 +258,5 @@ Export-ModuleMember -Function Get-TrackedFilePath
 Export-ModuleMember -Function New-Branch
 Export-ModuleMember -Function Invoke-ChangeCommit
 Export-ModuleMember -Function Invoke-ChangePush
+Export-ModuleMember -Function Invoke-BranchPush
 Export-ModuleMember -Function New-PullRequest
