@@ -64,12 +64,11 @@ Clear
 
 if ($ExitCode -eq 0) {
     Invoke-Command -ScriptBlock {.\terminationWorker.ps1}
-    Start-Sleep(5)
     Remove-LockFile
     exit
 } else {
     Write-Host 'Program terminated unexpectedly'
-    Start-Sleep(5)
+    Start-Sleep(3)
     Remove-LockFile
     exit
 }

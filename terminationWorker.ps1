@@ -45,4 +45,5 @@ git -C $env:PPLibraryPath status --porcelain | ForEach-Object -Process {
 if ($BranchCreated -eq $true) {
     Invoke-ChangePush -BranchName $BranchName
     New-PullRequest -BranchName $BranchName
+    Start-Sleep(5)
 }

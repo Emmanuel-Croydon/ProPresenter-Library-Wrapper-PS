@@ -5,7 +5,6 @@
 
 #TODO: Error handling doesn't work properly
 #TODO: Check if change is only UUIDs
-#TODO: Window focus for termination worker
 #TODO: Can I do this without polling?
 #TODO: Make prettier
 
@@ -80,6 +79,9 @@ function Add-GetConsoleWindowFunction {
 
     [DllImport("user32.dll")]
     public static extern bool ShowWindow(IntPtr hWnd, Int32 nCmdShow);
+
+    [DllImport("user32.dll")]
+    public static extern bool SetForegroundWindow(IntPtr hWnd);
     '
 }
 
@@ -101,7 +103,9 @@ function Show-Console
     # ShowDefault = 10,
     # ForceMinimized = 11
 
+    [Console.Window]::SetForegroundWindow($consolePtr)
     [Console.Window]::ShowWindow($consolePtr, 1)
+    [Console.Window]::SetForegroundWindow($consolePtr)
 }
 
 function Hide-Console
