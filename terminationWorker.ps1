@@ -8,7 +8,7 @@ Import-Module -Name .\library.psm1
 
 $BranchCreated = $false
 
-git -C $env:PPLibraryPath status --porcelain | ForEach-Object -Process {
+git -C $env:PPLibraryPath status --porcelain=v1 | ForEach-Object -Process {
     if ($_ -match '^\?\?') {
         $ChangeType = 'Added'
         $FilePath = Get-UntrackedFilePath -StatusString $_
@@ -17,7 +17,12 @@ git -C $env:PPLibraryPath status --porcelain | ForEach-Object -Process {
     elseif ($_ -match '^ M ') {
         $ChangeType = 'Modified'
         $FilePath = Get-TrackedFilePath -StatusString $_
-        $CommitBool = Wait-ForUserResponse -UserActionRequired "Modify $FilePath`?"
+        $uuidRegen = Get-UUIDRegen $FilePath
+        if ($uuidRegen -eq $false) {
+            $CommitBool = Wait-ForUserResponse -UserActionRequired "Modify $FilePath`?"
+        } else {
+            # Do nothing
+        }
     }
     elseif ($_ -match '^ D ') {
         $ChangeType = 'Removed'
@@ -45,5 +50,6 @@ git -C $env:PPLibraryPath status --porcelain | ForEach-Object -Process {
 if ($BranchCreated -eq $true) {
     Invoke-ChangePush -BranchName $BranchName
     New-PullRequest -BranchName $BranchName
-    Start-Sleep(5)
 }
+
+Start-Sleep(5)

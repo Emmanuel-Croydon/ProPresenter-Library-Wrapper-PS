@@ -3,7 +3,6 @@
 # ==================================================================================================
 #
 
-#TODO: Check if change is only UUIDs
 #TODO: Can I do this without polling?
 #TODO: Make prettier
 
@@ -243,6 +242,41 @@ function New-PullRequest {
     }
 }
 
+function Get-UUIDRegen {
+    Param(
+        [Parameter(Mandatory=$true)][string]$FilePath
+    )
+
+    Write-Host "Checking whether only changes are UUID regenerations..."
+    $diff = git -C $env:PPLibraryPath diff --word-diff=porcelain $FilePath
+    $diffFilter = $diff | Where-Object { ($_ -match '^@@') -or ($_ -match '^\+') -or ($_ -match '^\-') }
+    
+    $quantityRegex = '^@@ \-[0-9]+,7 \+[0-9]+,7 @@$'
+    $minusRegex = '^\-UUID="[a-z, A-Z, 0-9]{8}-[a-z, A-Z, 0-9]{4}-[a-z, A-Z, 0-9]{4}-[a-z, A-Z, 0-9]{4}-[a-z, A-Z, 0-9]{12}"$'
+    $plusRegex = '^\+UUID="[a-z, A-Z, 0-9]{8}-[a-z, A-Z, 0-9]{4}-[a-z, A-Z, 0-9]{4}-[a-z, A-Z, 0-9]{4}-[a-z, A-Z, 0-9]{12}"$'
+
+    $uuidRegen = $true
+
+    for ($i=2; $i -lt $diffFilter.Length; $i++) {
+        if (($i + 1) % 3 -eq 0) {
+            if ($diffFilter[$i] -notmatch $quantityRegex) {
+                $uuidRegen = $false
+            }
+        } elseif ($i % 3 -eq 0) {
+            if ($diffFilter[$i] -notmatch $minusRegex) {
+                $uuidRegen = $false
+            }
+        } elseif (($i - 1) % 3 -eq 0) {
+            if ($diffFilter[$i] -notmatch $plusRegex) {
+                $uuidRegen = $false
+            }
+        }
+    }
+    Write-Host($uuidRegen)
+
+    return $uuidRegen
+}
+
 
 Export-ModuleMember -Function Start-ProPresenter
 Export-ModuleMember -Function Sync-MasterLibrary
@@ -260,3 +294,4 @@ Export-ModuleMember -Function Invoke-ChangeCommit
 Export-ModuleMember -Function Invoke-ChangePush
 Export-ModuleMember -Function Invoke-BranchPush
 Export-ModuleMember -Function New-PullRequest
+Export-ModuleMember -Function Get-UUIDRegen
