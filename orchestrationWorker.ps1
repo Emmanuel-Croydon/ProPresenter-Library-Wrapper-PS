@@ -3,10 +3,22 @@
 # ==================================================================================================
 #
 
+Param(
+    [Alias('v')][switch]$verbose
+)
+
+$ErrorActionPreference = 'Stop'
+
+# Verbose flag
+write-host $verbose
+if ($verbose -eq $true) {
+    $DebugPreference = "Continue"
+}
+
 Set-ExecutionPolicy RemoteSigned -Scope Process
 Import-Module -Name .\library.psm1
 
-$ErrorActionPreference = 'Stop'
+
 
 # Basic process locking
 if ((Test-Path -Path .\lock.txt) -eq $False) {
@@ -40,7 +52,7 @@ $envVars | forEach-Object {
 
 # Invoke startup worker
 $ProPresenterProc = Invoke-Command -ScriptBlock {.\startupWorker.ps1}
-$ProPresenterProc
+Write-Debug $ProPresenterProc
 Start-Sleep(5)
 $terminated = $False
 

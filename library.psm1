@@ -4,7 +4,10 @@
 #
 
 #TODO: Can I do this without polling?
-#TODO: Make prettier
+#TODO: fix bug with single word named files
+#TODO: fix bug with committing multiple mods in one go...
+#TODO: properties file for installation
+#TODO: parameterise making a live device
 
 function Start-ProPresenter { 
     Write-Host 'Starting ProPresenter.....'
@@ -14,16 +17,16 @@ function Start-ProPresenter {
 
 function Sync-MasterLibrary {
     Write-Host 'Pulling down library from master node.....'
-    git -C $env:PPLibraryPath reset --hard | Write-Host
-    git -C $env:PPLibraryPath clean -f -d | Write-Host
-    git -C $env:PPLibraryPath checkout master | Write-Host
+    git -C $env:PPLibraryPath reset --hard | Write-Debug
+    git -C $env:PPLibraryPath clean -f -d | Write-Debug
+    git -C $env:PPLibraryPath checkout master | Write-Debug
     
     $firstTry = $true    
     while (($firstTry -eq $true) -or ($retry -eq 'y')) {
         try
         {
             $firstTry = $false
-            git -C $env:PPLibraryPath pull | Write-Host
+            git -C $env:PPLibraryPath pull | Write-Debug
             if(-not $?) {
                 throw "Failed to sync with master library. Please check your network connection and then retry.`r`n If network is currently unavailable, please enter 'r' for retry next time you start the app with a network connection.`r`n If the problem persists, please contact support."
             } else {
@@ -136,7 +139,7 @@ function New-Branch {
     $DateTime = Get-Date -Format "yyyy-MM-dd_HHmm"
     $User = "$env:COMPUTERNAME/$env:USERNAME"
     $BranchName = "AUTO/$User/$DateTime"
-    git -C $env:PPLibraryPath checkout -b $BranchName | Write-Host
+    git -C $env:PPLibraryPath checkout -b $BranchName | Write-Debug
     Invoke-BranchPush $BranchName
     return $BranchName
 }
@@ -152,12 +155,12 @@ function Invoke-BranchPush {
         try
         {
             $firstTry = $false
-            git -C $env:PPLibraryPath push --set-upstream origin $BranchName | Write-Host
+            git -C $env:PPLibraryPath push --set-upstream origin $BranchName | Write-Debug
 
             if(-not $?) {
                 throw "Failed to push change. Please check your network connection and then retry.`r`n If network is currently unavailable, please enter 'r' for retry next time you start the app with a network connection.`r`n If the problem persists, please contact support."
             } else {
-                Write-Host "Created branch $BranchName"
+                Write-Host "Successfully pushed branch $BranchName"
             }
         } catch {
             Write-Error $($PSItem.ToString())
@@ -171,12 +174,12 @@ function Invoke-ChangeCommit {
         [Parameter(Mandatory=$true)][string]$FilePath,
         [Parameter(Mandatory=$true)][string]$ChangeType
     )
-    Write-Host "Invoke commit"
-    git -C $env:PPLibraryPath add $FilePath | Write-Host
+    Write-Debug "Invoke commit"
+    git -C $env:PPLibraryPath add $FilePath | Write-Debug
     $DateTime = Get-Date -Format "yyyy-MM-dd HH:mm"
     $User = "$env:COMPUTERNAME/$env:USERNAME"
-    Write-Host 'Change added'
-    git -C $env:PPLibraryPath commit -m "$ChangeType $FilePath $DateTime $User" | Write-Host
+    Write-Debug 'Change added'
+    git -C $env:PPLibraryPath commit -m "$ChangeType $FilePath $DateTime $User" | Write-Debug
     Write-Host 'Change committed'
 }
 
@@ -190,7 +193,7 @@ function Invoke-ChangePush {
         try
         {
             $firstTry = $false
-            git -C $env:PPLibraryPath push | Write-Host
+            git -C $env:PPLibraryPath push | Write-Debug
             
 
             if(-not $?) {
@@ -234,7 +237,8 @@ function New-PullRequest {
 
     try 
     {
-        Invoke-RestMethod -Uri $GitHubRequestUri -Method $ReqMethod -ContentType 'application/json' -Headers $ReqHeaders -Body ($ReqBody | ConvertTo-Json)
+        Invoke-RestMethod -Uri $GitHubRequestUri -Method $ReqMethod -ContentType 'application/json' -Headers $ReqHeaders -Body ($ReqBody | ConvertTo-Json) | Write-Debug
+        Write-Host "Successfully opened a pull request on $BranchName"
     }
     catch
     {
@@ -247,7 +251,7 @@ function Get-UUIDRegen {
         [Parameter(Mandatory=$true)][string]$FilePath
     )
 
-    Write-Host "Checking whether only changes are UUID regenerations..."
+    Write-Debug "Checking whether only changes are UUID regenerations..."
     $diff = git -C $env:PPLibraryPath diff --word-diff=porcelain $FilePath
     $diffFilter = $diff | Where-Object { ($_ -match '^@@') -or ($_ -match '^\+') -or ($_ -match '^\-') }
     
@@ -272,7 +276,7 @@ function Get-UUIDRegen {
             }
         }
     }
-    Write-Host($uuidRegen)
+    Write-Debug($uuidRegen)
 
     return $uuidRegen
 }

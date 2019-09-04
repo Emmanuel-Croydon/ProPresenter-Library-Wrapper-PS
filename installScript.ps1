@@ -65,3 +65,4 @@ Add-EnvironmentVariable -VariableName 'PPLibraryPath' -VariableValue (Read-Host 
 Add-EnvironmentVariable -VariableName 'PPRepoLocation' -VariableValue (Read-Host 'Please enter the location of the ProPresenter Library repository on GitHub (user/repo-name)')
 Write-Host 'Please authenticate with Git repository...'
 Add-EnvironmentVariable -VariableName 'PPLibraryAuthToken' -VariableValue (Get-AuthToken)
+Add-EnvironmentVariable -VariableName 'GIT_REDIRECT_STDERR' -VariableValue '2>&1'
