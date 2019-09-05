@@ -4,7 +4,6 @@
 #
 
 #TODO: Can I do this without polling?
-#TODO: fix bug with single word named files
 #TODO: fix bug with committing multiple mods in one go...
 #TODO: properties file for installation
 #TODO: parameterise making a live device
@@ -132,7 +131,13 @@ function Get-TrackedFilePath {
         [Parameter(Mandatory=$true)][string]$StatusString
     )
 
-    return $StatusString | Select-String -Pattern "(?<=[""'])(.*)(?=[""'])" | foreach { $_.matches }
+    $Filepath = $StatusString | Select-String -Pattern "(?<=[""'])(.*)(?=[""'])" | foreach { $_.matches }
+
+    if ($Filepath -eq $Null) {
+        return $StatusString | Select-String -Pattern "(?<= [MD] )(.*)" | foreach { $_.matches }
+    } else {
+        return $Filepath
+    }
 }
 
 function New-Branch {

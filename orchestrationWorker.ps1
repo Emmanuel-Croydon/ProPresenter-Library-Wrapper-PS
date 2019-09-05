@@ -10,7 +10,6 @@ Param(
 $ErrorActionPreference = 'Stop'
 
 # Verbose flag
-write-host $verbose
 if ($verbose -eq $true) {
     $DebugPreference = "Continue"
 }
