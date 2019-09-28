@@ -4,9 +4,6 @@
 #
 
 #TODO: Can I do this without polling?
-#TODO: fix bug with committing multiple mods in one go...
-#TODO: properties file for installation
-#TODO: parameterise making a live device
 
 function Start-ProPresenter { 
     Write-Host 'Starting ProPresenter.....'

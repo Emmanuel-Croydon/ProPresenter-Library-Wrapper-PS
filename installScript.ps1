@@ -60,9 +60,27 @@ function Add-EnvironmentVariable {
     Write-Host "Successfully added $VariableName : $VariableValue"
 }
 
-Add-EnvironmentVariable -VariableName 'ProPresenterEXE' -VariableValue (Read-Host 'Please enter the location of the ProPresenter.exe')
-Add-EnvironmentVariable -VariableName 'PPLibraryPath' -VariableValue (Read-Host 'Please enter the filepath for the ProPresenter library')
-Add-EnvironmentVariable -VariableName 'PPRepoLocation' -VariableValue (Read-Host 'Please enter the location of the ProPresenter Library repository on GitHub (user/repo-name)')
+
+function Read-EnvProperties {
+    Param(
+        [Parameter(Mandatory=$true)][string]$Filename
+    )
+    $filecontent = Get-Content $Filename -raw
+    $filecontent = $filecontent -join [Environment]::NewLine
+    $config = ConvertFrom-StringData($filecontent)
+    return $config
+}
+
+$config = Read-EnvProperties -Filename ".\envConfig.properties"
+
+
+Foreach($Key in $config.Keys) {
+    $Value = $config[$key]
+    Add-EnvironmentVariable -VariableName $key -VariableValue $value
+}
+
+Add-EnvironmentVariable -VariableName 'GIT_REDIRECT_STDERR' -VariableValue '2>&1'
+
 Write-Host 'Please authenticate with Git repository...'
 Add-EnvironmentVariable -VariableName 'PPLibraryAuthToken' -VariableValue (Get-AuthToken)
-Add-EnvironmentVariable -VariableName 'GIT_REDIRECT_STDERR' -VariableValue '2>&1'
+

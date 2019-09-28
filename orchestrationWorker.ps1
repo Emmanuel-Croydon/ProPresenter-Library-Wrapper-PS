@@ -64,6 +64,7 @@ do {
         $ExitCode = $ProPresenterProc.ExitCode
         $terminated = $True
     }
+    Start-Sleep(2)
 } while($terminated -eq $False)
 
 
