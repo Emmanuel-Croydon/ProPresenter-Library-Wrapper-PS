@@ -27,7 +27,7 @@ while (($repeat -eq $true) -or ($firstTry -eq $true)) {
         $BranchName = git -C $env:PPLibraryPath rev-parse --abbrev-ref HEAD
 
         if ($BranchName -eq 'master') {
-            Write-Host 'Could not find any changes to retry adding to master library'
+            Write-HostWithPadding 'Could not find any changes to retry adding to master library'
         } else {
             Invoke-BranchPush $BranchName | Out-Null
         }

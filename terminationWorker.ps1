@@ -30,7 +30,7 @@ git -C $env:PPLibraryPath status --porcelain=v1 | ForEach-Object -Process {
         $CommitBool = Wait-ForUserResponse -UserActionRequired "Remove '$FilePath'`?"
     }
     else {
-        Write-Host 'Unknown object - please contact support'
+        Write-HostWithPadding 'Unknown object - please contact support'
         $CommitBool = 'n'
     }
 
@@ -51,5 +51,5 @@ if ($BranchCreated -eq $true) {
     Invoke-ChangePush -BranchName $BranchName
     New-PullRequest -BranchName $BranchName
 } else {
-    Write-Host 'No changes added.'
+    Write-HostWithPadding 'No changes added.'
 }

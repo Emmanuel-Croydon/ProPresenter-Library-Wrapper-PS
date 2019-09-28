@@ -4,13 +4,13 @@
 #
 
 function Start-ProPresenter { 
-    Write-Host 'Starting ProPresenter.....'
+    Write-HostWithPadding 'Starting ProPresenter.....'
     $PropPresenterProc = Start-Process $env:ProPresenterEXE -PassThru
     return $PropPresenterProc
 }
 
 function Sync-MasterLibrary {
-    Write-Host 'Pulling down library from master node.....'
+    Write-HostWithPadding 'Pulling down library from master node.....'
     git -C $env:PPLibraryPath reset --hard | Write-Debug
     git -C $env:PPLibraryPath clean -f -d | Write-Debug
     git -C $env:PPLibraryPath checkout master | Write-Debug
@@ -24,7 +24,7 @@ function Sync-MasterLibrary {
             if(-not $?) {
                 throw "Failed to sync with master library. Please check your network connection and then retry.`r`n If network is currently unavailable, please enter 'r' for retry next time you start the app with a network connection.`r`n If the problem persists, please contact support."
             } else {
-                Write-Host 'Completed.'
+                Write-HostWithPadding 'Completed.'
             }
         } catch {
             Write-Error $($PSItem.ToString())
@@ -43,14 +43,14 @@ function Wait-ForUserResponse {
     $validResponsesString = '"{0}"' -f ($validResponses -join '", "')
 
     do {
-        $response = Read-Host $UserActionRequired
+        $response = Read-Host "    $UserActionRequired"
     
         if ($ValidResponses.Contains($response.toLower())) {
             return $response
         }
         else {
-            Write-Host "Invalid input. Please enter one of the following: $validResponsesString"
-            Write-Host '---------------------------------------------------------------------------'
+            Write-HostWithPadding "Invalid input. Please enter one of the following: $validResponsesString"
+            Write-HostWithPadding '---------------------------------------------------------------------------'
         }
     }
     while(1 -eq 1)
@@ -148,7 +148,7 @@ function Invoke-BranchPush {
     )
 
     $firstTry = $true
-    Write-Host "Pushing branch"
+    Write-HostWithPadding "Pushing branch"
     while (($firstTry -eq $true) -or ($retry -eq 'y')) {
         try
         {
@@ -158,7 +158,7 @@ function Invoke-BranchPush {
             if(-not $?) {
                 throw "Failed to push change. Please check your network connection and then retry.`r`n If network is currently unavailable, please enter 'r' for retry next time you start the app with a network connection.`r`n If the problem persists, please contact support."
             } else {
-                Write-Host "Successfully pushed branch $BranchName"
+                Write-HostWithPadding "Successfully pushed branch $BranchName"
             }
         } catch {
             Write-Error $($PSItem.ToString())
@@ -178,7 +178,7 @@ function Invoke-ChangeCommit {
     $User = "$env:COMPUTERNAME/$env:USERNAME"
     Write-Debug 'Change added'
     git -C $env:PPLibraryPath commit -m "$ChangeType $FilePath $DateTime $User" | Write-Debug
-    Write-Host 'Change committed'
+    Write-HostWithPadding 'Change committed'
 }
 
 function Invoke-ChangePush {
@@ -197,7 +197,7 @@ function Invoke-ChangePush {
             if(-not $?) {
                 throw "Failed to push changes. Please check your network connection and then retry.`r`n If network is currently unavailable, please enter 'r' for retry next time you start the app with a network connection.`r`n If the problem persists, please contact support."
             } else {
-                Write-Host "Pushed branch $BranchName"
+                Write-HostWithPadding "Pushed branch $BranchName"
             }
         } catch {
             Write-Error $($PSItem.ToString())
@@ -236,7 +236,7 @@ function New-PullRequest {
     try 
     {
         Invoke-RestMethod -Uri $GitHubRequestUri -Method $ReqMethod -ContentType 'application/json' -Headers $ReqHeaders -Body ($ReqBody | ConvertTo-Json) | Write-Debug
-        Write-Host "Successfully opened a pull request on $BranchName"
+        Write-HostWithPadding "Successfully opened a pull request on $BranchName"
     }
     catch
     {
@@ -279,6 +279,57 @@ function Get-UUIDRegen {
     return $uuidRegen
 }
 
+function Set-ConsoleFormat {
+    $console = $host.UI.RawUI
+    $console.WindowTitle = 'ProPresenter Library Wrapper'
+    $console.ForegroundColor = 'Yellow'
+}
+
+function Write-SplashScreen {
+    Write-Host -ForegroundColor DarkGreen -Object '
+
+
+
+
+
+    ██████╗ ██████╗  ██████╗ ██████╗ ██████╗ ███████╗███████╗███████╗███╗   ██╗████████╗███████╗██████╗ 
+    ██╔══██╗██╔══██╗██╔═══██╗██╔══██╗██╔══██╗██╔════╝██╔════╝██╔════╝████╗  ██║╚══██╔══╝██╔════╝██╔══██╗
+    ██████╔╝██████╔╝██║   ██║██████╔╝██████╔╝█████╗  ███████╗█████╗  ██╔██╗ ██║   ██║   █████╗  ██████╔╝
+    ██╔═══╝ ██╔══██╗██║   ██║██╔═══╝ ██╔══██╗██╔══╝  ╚════██║██╔══╝  ██║╚██╗██║   ██║   ██╔══╝  ██╔══██╗
+    ██║     ██║  ██║╚██████╔╝██║     ██║  ██║███████╗███████║███████╗██║ ╚████║   ██║   ███████╗██║  ██║
+    ╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚══════╝╚═╝  ╚═╝
+                                                                                                    
+    ██╗     ██╗██████╗ ██████╗  █████╗ ██████╗ ██╗   ██╗                                                
+    ██║     ██║██╔══██╗██╔══██╗██╔══██╗██╔══██╗╚██╗ ██╔╝                                                
+    ██║     ██║██████╔╝██████╔╝███████║██████╔╝ ╚████╔╝                                                 
+    ██║     ██║██╔══██╗██╔══██╗██╔══██║██╔══██╗  ╚██╔╝                                                  
+    ███████╗██║██████╔╝██║  ██║██║  ██║██║  ██║   ██║                                                   
+    ╚══════╝╚═╝╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝                                                   
+                                                                                                    
+    ██╗    ██╗██████╗  █████╗ ██████╗ ██████╗ ███████╗██████╗                                           
+    ██║    ██║██╔══██╗██╔══██╗██╔══██╗██╔══██╗██╔════╝██╔══██╗                                          
+    ██║ █╗ ██║██████╔╝███████║██████╔╝██████╔╝█████╗  ██████╔╝                                          
+    ██║███╗██║██╔══██╗██╔══██║██╔═══╝ ██╔═══╝ ██╔══╝  ██╔══██╗                                          
+    ╚███╔███╔╝██║  ██║██║  ██║██║     ██║     ███████╗██║  ██║                                          
+     ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝     ╚══════╝╚═╝  ╚═╝                                          
+                                                              
+                                                              
+                                                              
+                                                              
+                                                              
+                                                              '
+
+    Start-Sleep(1)
+}
+
+function Write-HostWithPadding {
+    Param(
+        [Parameter(Mandatory=$true)][string]$String
+    )
+
+    Write-Host "    $String"
+}
+
 
 Export-ModuleMember -Function Start-ProPresenter
 Export-ModuleMember -Function Sync-MasterLibrary
@@ -297,3 +348,6 @@ Export-ModuleMember -Function Invoke-ChangePush
 Export-ModuleMember -Function Invoke-BranchPush
 Export-ModuleMember -Function New-PullRequest
 Export-ModuleMember -Function Get-UUIDRegen
+Export-ModuleMember -Function Set-ConsoleFormat
+Export-ModuleMember -Function Write-HostWithPadding
+Export-ModuleMember -Function Write-SplashScreen

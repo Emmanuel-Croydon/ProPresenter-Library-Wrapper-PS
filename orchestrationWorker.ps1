@@ -16,21 +16,24 @@ if ($verbose -eq $true) {
 
 Set-ExecutionPolicy RemoteSigned -Scope Process
 Import-Module -Name .\library.psm1
+Set-ConsoleFormat
+Add-GetConsoleWindowFunction
 
 
 # Basic process locking
-if ((Test-Path -Path .\lock.txt) -eq $False) {
+if ((Test-Path -Path .\lock.pid) -eq $False) {
     New-LockFile
 } else {
-       $lockingpid = (Get-Content -Path .\lock.txt)
-    if (!(Get-Process -Id $lockingpid -ErrorAction SilentlyContinue)) {
+       $lockingpid = Get-Content -Path .\lock.pid
+    if (!(Get-Process -pid $lockingpid -ErrorAction SilentlyContinue)) {
         Update-LockFile
     } else {
+        Write-HostWithPadding "Process locked by $lockingpid"
         exit
     }
 }
 
-Add-GetConsoleWindowFunction
+Write-SplashScreen
 
 # Check environment variables installation
 $envVars = @('ProPresenterEXE', 'PPLibraryPath', 'PPRepoLocation', 'PPLibraryAuthToken')
@@ -73,7 +76,7 @@ Write-Debug "Exit code: $ExitCode"
 if ($ExitCode -eq 0) {
     Invoke-Command -ScriptBlock {.\terminationWorker.ps1}
 } else {
-    Write-Host 'Program terminated unexpectedly'
+    Write-HostWithPadding 'Program terminated unexpectedly'
 }
 
 Start-Sleep(5)
