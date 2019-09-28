@@ -53,32 +53,30 @@ $envVars | forEach-Object {
 $ProPresenterProc = Invoke-Command -ScriptBlock {.\startupWorker.ps1}
 Write-Debug $ProPresenterProc
 Start-Sleep(5)
-$terminated = $False
 
+Hide-Console
 
 # Monitor for process end
-Hide-Console
-do {
-    If ($ProPresenterProc.HasExited) {
-        $ProPresenterProc.WaitForExit()
-        $ExitCode = $ProPresenterProc.ExitCode
-        $terminated = $True
-    }
-    Start-Sleep(2)
-} while($terminated -eq $False)
-
+Register-ObjectEvent $ProPresenterProc -EventName Exited -SourceIdentifier 'ProPresenterTerminated' | Write-Debug
 
 # Invoke termination worker
+$terminationevent = Wait-Event -SourceIdentifier 'ProPresenterTerminated'
+
 Show-Console
-Clear
+if ($verbose -ne $true) {
+    Clear
+}
+
+$ProPresenterProc.WaitForExit()
+$ExitCode = $ProPresenterProc.ExitCode
+Write-Debug "Exit code: $ExitCode" 
 
 if ($ExitCode -eq 0) {
     Invoke-Command -ScriptBlock {.\terminationWorker.ps1}
-    Remove-LockFile
-    exit
 } else {
     Write-Host 'Program terminated unexpectedly'
-    Start-Sleep(3)
-    Remove-LockFile
-    exit
 }
+
+Start-Sleep(5)
+Remove-LockFile
+exit

@@ -3,8 +3,6 @@
 # ==================================================================================================
 #
 
-#TODO: Can I do this without polling?
-
 function Start-ProPresenter { 
     Write-Host 'Starting ProPresenter.....'
     $PropPresenterProc = Start-Process $env:ProPresenterEXE -PassThru

@@ -53,5 +53,3 @@ if ($BranchCreated -eq $true) {
 } else {
     Write-Host 'No changes added.'
 }
-
-Start-Sleep(5)
