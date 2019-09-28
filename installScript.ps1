@@ -3,6 +3,8 @@
 # ==================================================================================================
 #
 
+#Requires -RunAsAdministrator
+
 Set-ExecutionPolicy RemoteSigned -Scope Process
 
 $ErrorActionPreference = 'Stop'
@@ -71,16 +73,92 @@ function Read-EnvProperties {
     return $config
 }
 
+
+function Edit-TemplateShortcut {
+    Param(
+        [Parameter(Mandatory=$true)][string]$IconLocation
+    )
+
+    $wd = Get-Location
+    $path = "$wd\ProPresenter Library Wrapper.lnk"
+    $targetpath = "$wd\orchestrationWorker.ps1"
+    $obj = New-Object -ComObject WScript.Shell
+    $link = $obj.CreateShortcut($path)
+    
+    $link.Arguments = "-File $targetpath"
+    $link.WorkingDirectory = "$wd"
+    $link.IconLocation = "$IconLocation,0"
+
+    $link.Save()
+    Write-Host 'Successfully edited template shortcut'
+}
+
+
+function Copy-TemplateShortcutToLocation {
+    Param(
+        [Parameter(Mandatory=$true)][string]$DestinationLocation
+    )
+
+    $wd = Get-Location
+    $path = "$wd\ProPresenter Library Wrapper.lnk"
+    Copy-Item -Path $path -Destination $DestinationLocation
+}
+
+
+function Bastardise-OriginalPropresenterShortcut {
+    Param(
+        [Parameter(Mandatory=$true)][string]$ShortcutLocation
+    )
+
+    Rename-Item -Path "$ShortcutLocation\ProPresenter 6.lnk" -NewName "___PP6exe_DONOTUSE___.lnk"
+}
+
+
+function Replace-CommonProPresenterShortcuts {
+    
+    $UserDesktopPath = [Environment]::GetFolderPath("Desktop")
+    $UserDesktopShortcut = "$UserDesktopPath\ProPresenter 6.lnk"
+    $SharedDesktopPath = [Environment]::GetFolderPath("CommonDesktopDirectory")
+    $SharedDesktopShortcut = "$SharedDesktopPath\ProPresenter 6.lnk"
+
+    if ((Test-Path -Path $UserDesktopShortcut) -eq $True) {
+        Remove-Item $UserDesktopShortcut
+        Copy-TemplateShortcutToLocation $UserDesktopPath
+        Write-Host 'Successfully copied ProPresenter Library Wrapper shortcut to User Desktop'
+    }
+
+    if ((Test-Path -Path $SharedDesktopShortcut) -eq $True) {
+        Remove-Item $SharedDesktopShortcut
+        Copy-TemplateShortcutToLocation $SharedDesktopPath
+        Write-Host 'Successfully copied ProPresenter Library Wrapper shortcut to Shared Desktop'
+    }
+}
+
+
 $config = Read-EnvProperties -Filename ".\envConfig.properties"
 
-
 Foreach($Key in $config.Keys) {
-    $Value = $config[$key]
-    Add-EnvironmentVariable -VariableName $key -VariableValue $value
+    $Value = $config[$Key]
+    if ($Key -ne 'PPShortcutLocation') {
+        Add-EnvironmentVariable -VariableName $key -VariableValue $value
+    }
 }
 
 Add-EnvironmentVariable -VariableName 'GIT_REDIRECT_STDERR' -VariableValue '2>&1'
 
+Edit-TemplateShortcut $config['ProPresenterEXE']
+Copy-TemplateShortcutToLocation $config['PPShortcutLocation']
+Bastardise-OriginalPropresenterShortcut $config['PPShortcutLocation']
+Write-Host 'Successfully copied ProPresenter Library Wrapper shortcut to Start Menu'
+
+Replace-CommonProPresenterShortcuts
+
 Write-Host 'Please authenticate with Git repository...'
 Add-EnvironmentVariable -VariableName 'PPLibraryAuthToken' -VariableValue (Get-AuthToken)
 
+$repoPath = $config['PPRepoLocation']
+$libraryDir = $config['PPLibraryPath']
+$gitwd = $libraryDir.Substring(0, $libraryDir.lastIndexOf('\\'))
+git -C $gitwd clone "https://github.com/$repoPath.git" | Write-Host 
+
+Start-Sleep(5)
