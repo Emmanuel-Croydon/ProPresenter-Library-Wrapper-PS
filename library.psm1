@@ -57,13 +57,11 @@ function Wait-ForUserResponse {
 }
 
 function New-LockFile {
-    $text = "LOCKED BY: $PID"
-    $text | Out-File -FilePath .\lock.pid
+    $PID | Out-File -FilePath .\lock.pid
 }
 
 function Update-LockFile {
-    $text = "LOCKED BY: $PID"
-    $text | Out-File -FilePath .\lock.pid -Force
+    $PID | Out-File -FilePath .\lock.pid -Force
 }
 
 function Remove-LockFile {

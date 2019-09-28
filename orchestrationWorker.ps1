@@ -18,12 +18,11 @@ Set-ExecutionPolicy RemoteSigned -Scope Process
 Import-Module -Name .\library.psm1
 
 
-
 # Basic process locking
 if ((Test-Path -Path .\lock.txt) -eq $False) {
     New-LockFile
 } else {
-       $lockingpid = (Get-Content -Path .\lock.txt).TrimStart('LOCKED BY: ')
+       $lockingpid = (Get-Content -Path .\lock.txt)
     if (!(Get-Process -Id $lockingpid -ErrorAction SilentlyContinue)) {
         Update-LockFile
     } else {
