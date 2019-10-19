@@ -9,6 +9,8 @@ Import-Module -Name .\library.psm1
 $BranchCreated = $false
 
 git -C $env:PPLibraryPath status --porcelain=v1 | ForEach-Object -Process {
+    $CommitBool = 'n'
+
     if ($_ -match '^\?\?') {
         $ChangeType = 'Added'
         $FilePath = Get-UntrackedFilePath -StatusString $_
@@ -22,6 +24,7 @@ git -C $env:PPLibraryPath status --porcelain=v1 | ForEach-Object -Process {
             $CommitBool = Wait-ForUserResponse -UserActionRequired "Modify '$FilePath'`?"
         } else {
             # Do nothing
+            $CommitBool = 'n'
         }
     }
     elseif ($_ -match '^ D ') {
