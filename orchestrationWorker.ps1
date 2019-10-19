@@ -7,8 +7,6 @@ Param(
     [Alias('v')][switch]$verbose
 )
 
-$ErrorActionPreference = 'Stop'
-
 # Verbose flag
 if ($verbose -eq $true) {
     $DebugPreference = "Continue"
