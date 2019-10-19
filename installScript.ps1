@@ -110,7 +110,11 @@ function Bastardise-OriginalPropresenterShortcut {
         [Parameter(Mandatory=$true)][string]$ShortcutLocation
     )
 
-    Rename-Item -Path "$ShortcutLocation\ProPresenter 6.lnk" -NewName "___PP6exe_DONOTUSE___.lnk"
+	$OriginalPropresenterShortcut = "$ShortcutLocation\ProPresenter 6.lnk";
+	
+	if ((Test-Path -Path $OriginalPropresenterShortcut) -eq $True) {
+		Rename-Item -Path $OriginalPropresenterShortcut -NewName "___PP6exe_DONOTUSE___.lnk"
+	}
 }
 
 
@@ -158,7 +162,7 @@ Add-EnvironmentVariable -VariableName 'PPLibraryAuthToken' -VariableValue (Get-A
 
 $repoPath = $config['PPRepoLocation']
 $libraryDir = $config['PPLibraryPath']
-$gitwd = $libraryDir.Substring(0, $libraryDir.lastIndexOf('\\'))
+$gitwd = $libraryDir.Substring(0, $libraryDir.lastIndexOf('\'))
 git -C $gitwd clone "https://github.com/$repoPath.git" | Write-Host 
 
 Start-Sleep(5)
