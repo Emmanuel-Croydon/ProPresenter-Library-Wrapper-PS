@@ -37,7 +37,7 @@ function Get-AuthToken {
         $Token = Invoke-RestMethod -Uri $GitHubAuthUri -Method 'Post'-ContentType 'application/json' -Headers $AuthHeaders -Body ($AuthBody | ConvertTo-Json) -ErrorAction Stop
         Write-Host "Successfully added Github API authentication."
     } catch {
-        Write-Error "Failed to add authentication. Please check your credentials and your network connection then retry."
+        Write-Error -Message 'Failed to add authentication. Please check your credentials and your network connection then retry.' -ErrorAction Continue
         Start-Sleep(5)
         exit
     }
@@ -101,7 +101,11 @@ function Copy-TemplateShortcutToLocation {
 
     $wd = Get-Location
     $path = "$wd\ProPresenter Library Wrapper.lnk"
-    Copy-Item -Path $path -Destination $DestinationLocation
+    if ((Test-Path -Path $DestinationLocation) -eq $True) {
+        Copy-Item -Path $path -Destination $DestinationLocation
+    } else {
+        Write-Error -Message 'Could not find template shortcut' -ErrorAction Continue
+    }
 }
 
 
@@ -114,7 +118,11 @@ function Bastardise-OriginalPropresenterShortcut {
 	
 	if ((Test-Path -Path $OriginalPropresenterShortcut) -eq $True) {
 		Rename-Item -Path $OriginalPropresenterShortcut -NewName "___PP6exe_DONOTUSE___.lnk"
-	}
+	} elseif ((Test-Path -Path "$ShortcutLocation\___PP6exe_DONOTUSE___.lnk") -eq $True) {
+        Write-Host 'Original ProPresenter shortcut already renamed'
+    } else {
+        Write-Error -Message 'Could not find original ProPresenter shortcut' -ErrorAction Continue
+    }
 }
 
 
@@ -129,12 +137,16 @@ function Replace-CommonProPresenterShortcuts {
         Remove-Item $UserDesktopShortcut
         Copy-TemplateShortcutToLocation $UserDesktopPath
         Write-Host 'Successfully copied ProPresenter Library Wrapper shortcut to User Desktop'
+    } else {
+        Write-Error -Message 'Could not find shortcut on desktop' -ErrorAction Continue
     }
 
     if ((Test-Path -Path $SharedDesktopShortcut) -eq $True) {
         Remove-Item $SharedDesktopShortcut
         Copy-TemplateShortcutToLocation $SharedDesktopPath
         Write-Host 'Successfully copied ProPresenter Library Wrapper shortcut to Shared Desktop'
+    } else {
+        Write-Error -Message 'Could not find shortcut on shared desktop' -ErrorAction Continue
     }
 }
 
@@ -162,7 +174,12 @@ Add-EnvironmentVariable -VariableName 'PPLibraryAuthToken' -VariableValue (Get-A
 
 $repoPath = $config['PPRepoLocation']
 $libraryDir = $config['PPLibraryPath']
-$gitwd = $libraryDir.Substring(0, $libraryDir.lastIndexOf('\'))
-git -C $gitwd clone "https://github.com/$repoPath.git" | Write-Host 
+
+if ((Test-Path -Path $libraryDir) -eq $True) {
+    $gitwd = $libraryDir.Substring(0, $libraryDir.lastIndexOf('\'))
+    git -C $gitwd clone "https://github.com/$repoPath.git" | Write-Host 
+} else {
+    Write-Error -Message 'Could not find library directory' -ErrorAction Continue
+}
 
 Start-Sleep(5)
