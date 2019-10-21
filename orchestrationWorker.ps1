@@ -12,6 +12,8 @@ if ($verbose -eq $true) {
     $DebugPreference = "Continue"
 }
 
+$ErrorActionPreference = 'Stop'
+
 Set-ExecutionPolicy RemoteSigned -Scope Process
 Import-Module -Name .\library.psm1
 Set-ConsoleFormat
@@ -43,7 +45,7 @@ $envVars | forEach-Object {
             Throw 
         }
     } catch {
-        Write-Error 'An error has occurred with the installation of the ProPresenter Library Wrapper. Please contact support.'
+        Write-Error -Message 'An error has occurred with the installation of the ProPresenter Library Wrapper. Please contact support.' -ErrorAction Continue
         Remove-LockFile
         exit
     }

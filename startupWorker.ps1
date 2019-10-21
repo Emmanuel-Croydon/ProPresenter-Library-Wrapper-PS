@@ -13,7 +13,7 @@ while (($repeat -eq $true) -or ($firstTry -eq $true)) {
     $repeat = $false
 
     if ($env:PPLiveDevice -eq 1) {
-        $response = Wait-ForUserResponse -UserActionRequired 'Re-sync ProPresenter library with master database? (y/n)' -ValidResponses @('y', 'n', 'r')
+        $response = Wait-ForUserResponse -UserActionRequired "Re-sync ProPresenter library with master database? (y/n)`r`n    (This will overwrite your local changes)" -ValidResponses @('y', 'n', 'r')
     } else {
         $response = 'y'
     }
@@ -30,6 +30,7 @@ while (($repeat -eq $true) -or ($firstTry -eq $true)) {
             Write-HostWithPadding 'Could not find any changes to retry adding to master library'
         } else {
             Invoke-BranchPush $BranchName | Out-Null
+            New-PullRequest -BranchName $BranchName
         }
         $repeat = $true
     }
