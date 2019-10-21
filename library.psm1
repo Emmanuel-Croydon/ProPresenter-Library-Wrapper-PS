@@ -17,18 +17,14 @@ function Sync-MasterLibrary {
     
     $firstTry = $true    
     while (($firstTry -eq $true) -or ($retry -eq 'y')) {
-        try
-        {
-            $firstTry = $false
-            git -C $env:PPLibraryPath pull | Write-Debug
-            if(-not $?) {
-                throw "Failed to sync with master library. Please check your network connection and then retry.`r`n If network is currently unavailable, please enter 'r' for retry next time you start the app with a network connection.`r`n If the problem persists, please contact support."
-            } else {
-                Write-HostWithPadding 'Completed.'
-            }
-        } catch {
-            Write-Error $($PSItem.ToString())
+
+        $firstTry = $false
+        git -C $env:PPLibraryPath pull | Write-Debug
+        if(-not $?) {
+            Write-Error "Failed to sync with master library. Please check your network connection and then retry.`r`n If network is currently unavailable, please enter 'r' for retry next time you start the app with a network connection.`r`n If the problem persists, please contact support."
             $retry = Wait-ForUserResponse('Retry?')
+        } else {
+            Write-HostWithPadding 'Completed.'
         }
     }
 }
@@ -153,20 +149,15 @@ function Invoke-BranchPush {
     $firstTry = $true
     Write-HostWithPadding "Pushing branch"
     while (($firstTry -eq $true) -or ($retry -eq 'y')) {
-        try
-        {
-            $firstTry = $false
-            git -C $env:PPLibraryPath push --set-upstream origin $BranchName | Write-Debug
+        $firstTry = $false
+        git -C $env:PPLibraryPath push --set-upstream origin $BranchName | Write-Debug
 
-            if(-not $?) {
-                throw "Failed to push change. Please check your network connection and then retry.`r`n If network is currently unavailable, please enter 'r' for retry next time you start the app with a network connection.`r`n If the problem persists, please contact support."
-            } else {
-                Write-HostWithPadding "Successfully pushed branch $BranchName"
-            }
-        } catch {
-            Write-Error $($PSItem.ToString())
+        if(-not $?) {
+            Write-Error "Failed to push change. Please check your network connection and then retry.`r`n If network is currently unavailable, please enter 'r' for retry next time you start the app with a network connection.`r`n If the problem persists, please contact support."
             $retry = Wait-ForUserResponse('Retry?')
-        } 
+        } else {
+            Write-HostWithPadding "Successfully pushed branch $BranchName"
+        }
     }
 }
 
@@ -191,21 +182,16 @@ function Invoke-ChangePush {
 
     $firstTry = $true
     while (($firstTry -eq $true) -or ($retry -eq 'y')) {
-        try
-        {
-            $firstTry = $false
-            git -C $env:PPLibraryPath push | Write-Debug
+        $firstTry = $false
+        git -C $env:PPLibraryPath push | Write-Debug
             
 
-            if(-not $?) {
-                throw "Failed to push changes. Please check your network connection and then retry.`r`n If network is currently unavailable, please enter 'r' for retry next time you start the app with a network connection.`r`n If the problem persists, please contact support."
-            } else {
-                Write-HostWithPadding "Pushed branch $BranchName"
-            }
-        } catch {
-            Write-Error $($PSItem.ToString())
+        if(-not $?) {
+            Write-Error "Failed to push changes. Please check your network connection and then retry.`r`n If network is currently unavailable, please enter 'r' for retry next time you start the app with a network connection.`r`n If the problem persists, please contact support."
             $retry = Wait-ForUserResponse('Retry?')
-        } 
+        } else {
+            Write-HostWithPadding "Pushed branch $BranchName"
+        }
     }
 }
 
