@@ -6,7 +6,6 @@
 Set-ExecutionPolicy RemoteSigned -Scope Process
 Import-Module -Name .\library.psm1
 
-$BranchCreated = $false
 
 git -C $env:PPLibraryPath status --porcelain=v1 | ForEach-Object -Process {
     $CommitBool = 'n'
@@ -37,20 +36,25 @@ git -C $env:PPLibraryPath status --porcelain=v1 | ForEach-Object -Process {
         $CommitBool = 'n'
     }
 
-    if (($CommitBool -eq 'y') -and ($BranchCreated -eq $false)) {
-        $BranchName = New-Branch
-        Invoke-ChangeCommit -FilePath $FilePath -ChangeType $ChangeType
-        $BranchCreated = $true
-    }
-    elseif (($CommitBool -eq 'y') -and ($BranchCreated -eq $true)) {
-        Invoke-ChangeCommit -FilePath $FilePath -ChangeType $ChangeType
+
+    if ($CommitBool -eq 'y') {
+
+        $BranchName = Get-WorkingBranchName
+
+        if ($BranchName -eq 'master') {
+            $BranchName = New-Branch
+            Invoke-ChangeCommit -FilePath $FilePath -ChangeType $ChangeType
+        }
+        else {
+            Invoke-ChangeCommit -FilePath $FilePath -ChangeType $ChangeType
+        }
     }
     elseif ($CommitBool -eq 'n') {
         # Do nothing
     }
 }
 
-if ($BranchCreated -eq $true) {
+if ($BranchName -ne 'master') {
     Invoke-ChangePush -BranchName $BranchName
     New-PullRequest -BranchName $BranchName
 } else {

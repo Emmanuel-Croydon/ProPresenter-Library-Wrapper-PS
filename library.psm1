@@ -279,6 +279,11 @@ function Set-ConsoleFormat {
     $console.ForegroundColor = 'Yellow'
 }
 
+function Get-WorkingBranchName {
+    $BranchName = git -C $env:PPLibraryPath rev-parse --abbrev-ref HEAD | Write-Debug
+    return $BranchName
+}
+
 function Write-SplashScreen {
     Write-Host -ForegroundColor DarkGreen -Object '
 
@@ -343,5 +348,6 @@ Export-ModuleMember -Function Invoke-BranchPush
 Export-ModuleMember -Function New-PullRequest
 Export-ModuleMember -Function Get-UUIDRegen
 Export-ModuleMember -Function Set-ConsoleFormat
+Export-ModuleMember -Function Get-WorkingBranchName
 Export-ModuleMember -Function Write-HostWithPadding
 Export-ModuleMember -Function Write-SplashScreen
