@@ -29,6 +29,21 @@ function Sync-MasterLibrary {
     }
 }
 
+function Remove-LeftoverPlaylistData {
+    Write-Debug 'Removing playlist data...'
+    Remove-Item –Path "$env:PPPlayListLocation\\*" -include *.pro6pl –recurse
+    Write-Debug 'Removed.'
+    Write-Debug 'Copying default playlist file across...'
+    Copy-Item -Path "$env:PPLibraryPath\\Config Templates\\Default.pro6pl" -Destination $env:PPPlayListLocation
+    Write-Debug 'Copied.'
+}
+
+function Copy-LabelTemplateFile {
+    Write-Debug 'Copying label templates across...'
+    Copy-Item -Path "$env:PPLibraryPath\\Config Templates\\LabelsPreferences.pro6pref" -Destination $env:PPLabelLocation
+    Write-Debug 'Copied.'
+}
+
 function Wait-ForUserResponse {
     Param(
         [Parameter(Mandatory=$true)][string]$UserActionRequired,
@@ -268,7 +283,7 @@ function Get-UUIDRegen {
             }
         }
     }
-    Write-Debug($uuidRegen)
+    Write-Debug "UUIDRegen? $uuidRegen"
 
     return $uuidRegen
 }
@@ -280,7 +295,8 @@ function Set-ConsoleFormat {
 }
 
 function Get-WorkingBranchName {
-    $BranchName = git -C $env:PPLibraryPath rev-parse --abbrev-ref HEAD | Write-Debug
+    $BranchName = git -C $env:PPLibraryPath rev-parse --abbrev-ref HEAD
+    Write-Debug "Working Branch: $BranchName"
     return $BranchName
 }
 
@@ -332,6 +348,8 @@ function Write-HostWithPadding {
 
 Export-ModuleMember -Function Start-ProPresenter
 Export-ModuleMember -Function Sync-MasterLibrary
+Export-ModuleMember -Function Remove-LeftoverPlaylistData
+Export-ModuleMember -Function Copy-LabelTemplateFile
 Export-ModuleMember -Function Wait-ForUserResponse
 Export-ModuleMember -Function Add-GetConsoleWindowFunction
 Export-ModuleMember -Function New-LockFile

@@ -6,6 +6,7 @@
 Set-ExecutionPolicy RemoteSigned -Scope Process
 Import-Module -Name .\library.psm1
 
+$BranchName = Get-WorkingBranchName
 
 git -C $env:PPLibraryPath status --porcelain=v1 | ForEach-Object -Process {
     $CommitBool = 'n'
@@ -38,8 +39,6 @@ git -C $env:PPLibraryPath status --porcelain=v1 | ForEach-Object -Process {
 
 
     if ($CommitBool -eq 'y') {
-
-        $BranchName = Get-WorkingBranchName
 
         if ($BranchName -eq 'master') {
             $BranchName = New-Branch

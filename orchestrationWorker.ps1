@@ -9,7 +9,7 @@ Param(
 
 # Verbose flag
 if ($verbose -eq $true) {
-    $DebugPreference = "Continue"
+    $global:DebugPreference = "Continue"
 }
 
 $ErrorActionPreference = 'Stop'
@@ -56,7 +56,7 @@ $ProPresenterProc = Invoke-Command -ScriptBlock {.\startupWorker.ps1}
 Write-Debug $ProPresenterProc
 Start-Sleep(5)
 
-Hide-Console
+Hide-Console | Out-Null
 
 # Monitor for process end
 Register-ObjectEvent $ProPresenterProc -EventName Exited -SourceIdentifier 'ProPresenterTerminated' | Write-Debug
@@ -64,7 +64,7 @@ Register-ObjectEvent $ProPresenterProc -EventName Exited -SourceIdentifier 'ProP
 # Invoke termination worker
 $terminationevent = Wait-Event -SourceIdentifier 'ProPresenterTerminated'
 
-Show-Console
+Show-Console | Out-Null
 if ($verbose -ne $true) {
     Clear
 }
