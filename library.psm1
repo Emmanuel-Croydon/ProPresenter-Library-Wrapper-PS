@@ -60,9 +60,6 @@ function Wait-ForUserResponse {
             return $response
         }
         else {
-            if ($ValidResponsesString = '"y", "n", "r"') {
-                $validResponsesOutput = '"y", "n"'
-            }
             Write-HostWithPadding "Invalid input. Please enter one of the following: $validResponsesOutput"
             Write-HostWithPadding '---------------------------------------------------------------------------'
         }
