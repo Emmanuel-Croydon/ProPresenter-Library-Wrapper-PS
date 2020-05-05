@@ -11,7 +11,7 @@ $BranchName = Get-WorkingBranchName
 git -C $env:PPLibraryPath status --porcelain=v1 | ForEach-Object -Process {
     $CommitBool = 'n'
 
-    if ($_ -match '^\?\?') {
+    if ($_ -match '^\?\? ') {
         $ChangeType = 'Added'
         $FilePath = Get-UntrackedFilePath -StatusString $_
         $CommitBool = Wait-ForUserResponse -UserActionRequired "Add '$FilePath'`?"
