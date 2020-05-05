@@ -34,13 +34,13 @@ function Remove-LeftoverPlaylistData {
     Remove-Item –Path "$env:PPPlayListLocation\\*" -include *.pro6pl –recurse
     Write-Debug 'Removed.'
     Write-Debug 'Copying default playlist file across...'
-    Copy-Item -Path "$env:PPLibraryPath\\Config Templates\\Default.pro6pl" -Destination $env:PPPlayListLocation
+    Copy-Item -Path "$env:PPLibraryPath\\Config Templates\\windows_Default.pro6pl" -Destination "$env:PPPlayListLocation\\Default.pro6pl"
     Write-Debug 'Copied.'
 }
 
 function Copy-LabelTemplateFile {
     Write-Debug 'Copying label templates across...'
-    Copy-Item -Path "$env:PPLibraryPath\\Config Templates\\LabelsPreferences.pro6pref" -Destination $env:PPLabelLocation
+    Copy-Item -Path "$env:PPLibraryPath\\Config Templates\\windows_LabelsPreferences.pro6pref" -Destination "$env:PPLabelLocation\\LabelsPreferences.pro6pref"
     Write-Debug 'Copied.'
 }
 
