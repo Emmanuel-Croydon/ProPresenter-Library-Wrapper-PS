@@ -34,13 +34,13 @@ function Remove-LeftoverPlaylistData {
     Remove-Item –Path "$env:PPPlayListLocation\\*" -include *.pro6pl –recurse
     Write-Debug 'Removed.'
     Write-Debug 'Copying default playlist file across...'
-    Copy-Item -Path "$env:PPLibraryPath\\Config Templates\\windows_Default.pro6pl" -Destination "$env:PPPlayListLocation\\Default.pro6pl"
+    Copy-Item -Path "$env:PPLibraryPath\\Config Templates\\Default.pro6pl" -Destination $env:PPPlayListLocation
     Write-Debug 'Copied.'
 }
 
 function Copy-LabelTemplateFile {
     Write-Debug 'Copying label templates across...'
-    Copy-Item -Path "$env:PPLibraryPath\\Config Templates\\windows_LabelsPreferences.pro6pref" -Destination "$env:PPLabelLocation\\LabelsPreferences.pro6pref"
+    Copy-Item -Path "$env:PPLibraryPath\\Config Templates\\LabelsPreferences.pro6pref" -Destination $env:PPLabelLocation
     Write-Debug 'Copied.'
 }
 
@@ -166,7 +166,7 @@ function Invoke-BranchPush {
         git -C $env:PPLibraryPath push --set-upstream origin $BranchName | Write-Debug
 
         if(-not $?) {
-            Write-Error -Message "Failed to push branch. Please check your network connection and then retry.`r`n If network is currently unavailable, please enter 'r' for retry next time you start the app with a network connection.`r`n If the problem persists, please contact support." -ErrorAction Continue
+            Write-Error -Message "Failed to push branch. Please check your network connection and then retry.`r`n If network is currently unavailable, please do the following:`r`n`r`n1) Restart the app when a network connection is available. Do NOT sync with master library on start up.`r`n2) Quit ProPresenter to retry adding your changes to the master library.`r`n`r`n If this problem persists, please contact support." -ErrorAction Continue
             $retry = Wait-ForUserResponse('Retry?')
         } else {
             Write-HostWithPadding "Successfully pushed branch $BranchName"
@@ -201,7 +201,7 @@ function Invoke-ChangePush {
             
 
         if(-not $?) {
-            Write-Error -Message "Failed to push changes. Please check your network connection and then retry.`r`n If network is currently unavailable, please enter 'r' for retry next time you start the app with a network connection.`r`n If the problem persists, please contact support." -ErrorAction Continue
+            Write-Error -Message "Failed to push changes. Please check your network connection and then retry.`r`n If network is currently unavailable, please do the following:`r`n`r`n1) Restart the app when a network connection is available. Do NOT sync with master library on start up.`r`n2) Quit ProPresenter to retry adding your changes to the master library.`r`n`r`n If this problem persists, please contact support." -ErrorAction Continue
             $retry = Wait-ForUserResponse('Retry?')
         } else {
             Write-HostWithPadding "Pushed branch $BranchName"
