@@ -42,6 +42,7 @@ git -C $env:PPLibraryPath status --porcelain=v1 | ForEach-Object -Process {
 
         if ($BranchName -eq 'master') {
             $BranchName = New-Branch
+            Format-XmlFile -FilePath $FilePath
             Invoke-ChangeCommit -FilePath $FilePath -ChangeType $ChangeType
         }
         else {

@@ -31,16 +31,16 @@ function Sync-MasterLibrary {
 
 function Remove-LeftoverPlaylistData {
     Write-Debug 'Removing playlist data...'
-    Remove-Item –Path "$env:PPPlayListLocation\\*" -include *.pro6pl –recurse
+    Remove-Item –Path "$env:PPPlayListLocation\\*" -include *.pro6pl –recurse -ErrorAction Ignore
     Write-Debug 'Removed.'
     Write-Debug 'Copying default playlist file across...'
-    Copy-Item -Path "$env:PPLibraryPath\\Config Templates\\Default.pro6pl" -Destination $env:PPPlayListLocation
+    Copy-Item -Path "$env:PPLibraryPath\\Config Templates\\windows_Default.pro6pl" -Destination $env:PPPlayListLocation
     Write-Debug 'Copied.'
 }
 
 function Copy-LabelTemplateFile {
     Write-Debug 'Copying label templates across...'
-    Copy-Item -Path "$env:PPLibraryPath\\Config Templates\\LabelsPreferences.pro6pref" -Destination $env:PPLabelLocation
+    Copy-Item -Path "$env:PPLibraryPath\\Config Templates\\windows_LabelsPreferences.pro6pref" -Destination $env:PPLabelLocation
     Write-Debug 'Copied.'
 }
 
@@ -285,6 +285,44 @@ function Get-UUIDRegen {
     return $uuidRegen
 }
 
+function Format-XmlFile {
+    Param(
+        [Parameter(Mandatory=$true)][string]$FilePath
+    )
+    
+    if (-not (Test-Path "$env:PPLibraryPath/$FilePath")) {
+        Write-Error "$env:PPLibraryPath/$FilePath was not found."
+    }
+ 
+    $fullXmlPath = (Resolve-Path "$env:PPLibraryPath/$FilePath")
+    [xml]$xml = Get-Content $fullXmlPath
+    Write-Debug "Sorting $fullXmlPath"
+    Sort-XmlAttributes $xml.DocumentElement
+    $xml.Save($fullXmlPath)
+}
+
+function Sort-XmlAttributes {
+    Param(
+        [Parameter(Mandatory=$true)]$node
+    )
+
+    if ($node.HasChildNodes) {
+        foreach ($child in $node.ChildNodes) {
+            Sort-XmlAttributes $child
+        }
+    }
+    
+    if ($node.GetType() -eq [System.Xml.XmlElement]) {
+        $sortedAttributes = $node.Attributes | Sort-Object { $_.Name }
+        Write-Debug "$sortedAttributes"
+        $node.RemoveAllAttributes()
+
+        foreach ($sortedAttribute in $sortedAttributes) {
+            [void]$node.Attributes.Append($sortedAttribute)
+        }
+    }
+}
+
 function Set-ConsoleFormat {
     $console = $host.UI.RawUI
     $console.WindowTitle = 'ProPresenter Library Wrapper'
@@ -362,6 +400,7 @@ Export-ModuleMember -Function Invoke-ChangePush
 Export-ModuleMember -Function Invoke-BranchPush
 Export-ModuleMember -Function New-PullRequest
 Export-ModuleMember -Function Get-UUIDRegen
+Export-ModuleMember -Function Format-XmlFile
 Export-ModuleMember -Function Set-ConsoleFormat
 Export-ModuleMember -Function Get-WorkingBranchName
 Export-ModuleMember -Function Write-HostWithPadding
