@@ -297,8 +297,11 @@ function Format-XmlFile {
     $fullXmlPath = (Resolve-Path "$env:PPLibraryPath/$FilePath")
     [xml]$xml = Get-Content $fullXmlPath
     Write-Debug "Sorting $fullXmlPath"
+    # Sort attributes in ASCII sequence
     Sort-XmlAttributes $xml.DocumentElement
     $xml.Save($fullXmlPath)
+    # Replace funny spaces before end tags
+    $xmlFile = ((Get-Content $fullXmlPath -raw) -replace ' />', '/>') | Set-Content -Path $fullXmlPath
 }
 
 function Sort-XmlAttributes {
@@ -313,12 +316,15 @@ function Sort-XmlAttributes {
     }
     
     if ($node.GetType() -eq [System.Xml.XmlElement]) {
-        $sortedAttributes = $node.Attributes | Sort-Object { $_.Name }
-        Write-Debug "$sortedAttributes"
+        $sortedAttributes = New-Object 'System.Collections.Generic.SortedDictionary[[string],[string]]' -ArgumentList ([System.StringComparer]::Ordinal)
+        $node.Attributes | ForEach-Object { $sortedAttributes[$_.Name] = $_.Value }
         $node.RemoveAllAttributes()
 
-        foreach ($sortedAttribute in $sortedAttributes) {
-            [void]$node.Attributes.Append($sortedAttribute)
+        foreach ($key in $sortedAttributes.Keys) {
+            Write-Debug $key
+            $xmlattrib = $node.OwnerDocument.CreateAttribute($key)
+            $xmlattrib.Value = $sortedAttributes[$key]
+            $node.Attributes.Append($xmlattrib)
         }
     }
 }
