@@ -19,6 +19,7 @@ git -C $env:PPLibraryPath status --porcelain=v1 | ForEach-Object -Process {
     elseif ($_ -match '^ M ') {
         $ChangeType = 'Modified'
         $FilePath = Get-TrackedFilePath -StatusString $_
+        Format-XmlFile -FilePath $FilePath
         $uuidRegen = Get-UUIDRegen $FilePath
         if ($uuidRegen -eq $false) {
             $CommitBool = Wait-ForUserResponse -UserActionRequired "Modify '$FilePath'`?"
@@ -42,7 +43,6 @@ git -C $env:PPLibraryPath status --porcelain=v1 | ForEach-Object -Process {
 
         if ($BranchName -eq 'master') {
             $BranchName = New-Branch
-            Format-XmlFile -FilePath $FilePath
             Invoke-ChangeCommit -FilePath $FilePath -ChangeType $ChangeType
         }
         else {
