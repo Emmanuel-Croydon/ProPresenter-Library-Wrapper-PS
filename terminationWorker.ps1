@@ -14,6 +14,7 @@ git -C $env:PPLibraryPath status --porcelain=v1 | ForEach-Object -Process {
     if ($_ -match '^\?\? ') {
         $ChangeType = 'Added'
         $FilePath = Get-UntrackedFilePath -StatusString $_
+        Format-XmlFile -FilePath $FilePath
         $CommitBool = Wait-ForUserResponse -UserActionRequired "Add '$FilePath'`?"
     }
     elseif ($_ -match '^ M ') {
