@@ -301,7 +301,7 @@ function Format-XmlFile {
     Sort-XmlAttributes $xml.DocumentElement
     $xml.Save($fullXmlPath)
     # Replace funny spaces before end tags
-    $xmlFile = ((Get-Content $fullXmlPath -raw) -replace ' />', '/>') | Set-Content -Path $fullXmlPath
+    ((Get-Content $fullXmlPath -raw) -replace ' />', '/>') | Set-Content -Path $fullXmlPath
 }
 
 function Sort-XmlAttributes {
@@ -324,7 +324,7 @@ function Sort-XmlAttributes {
             Write-Debug $key
             $xmlattrib = $node.OwnerDocument.CreateAttribute($key)
             $xmlattrib.Value = $sortedAttributes[$key]
-            $node.Attributes.Append($xmlattrib)
+            $nodeAtts = $node.Attributes.Append($xmlattrib)
         }
     }
 }
