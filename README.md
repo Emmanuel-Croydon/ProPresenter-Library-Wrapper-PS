@@ -1,7 +1,7 @@
 # ProPresenter-Library-Wrapper-PS
 Wrapper application for ProPresenter on Windows that manages the library as a git repository.
 
-THE PROBLEM WE ARE TRYING TO SOLVE:
+*THE PROBLEM WE ARE TRYING TO SOLVE:*
 
 - Running ProPresenter across multiple devices is difficult as there is no real method of keeping the libraries across devices in sync with one another
 - The methods provided by Renewed Vision (ProPresenter Cloud Sync and ProPresenter Local Sync) are basic at best, requiring the user to manually run the actions and only working on all files at one time or none at all (lacking granularity)
@@ -10,12 +10,12 @@ THE PROBLEM WE ARE TRYING TO SOLVE:
 - Essentially every time you approach a ProPresenter machine, the library is in an unknown, unpredictable state: however the last person has left it. There is currently no data integrity.
 
 
-THE SOLUTION:
+*THE SOLUTION:*
 
 The proposed solution to the above is checking the library into version control (like git). This set of scripts aids with making this slightly more user friendly and taking out some of the manual work that would be required by semi-automating the git workflows.
 
 
-INSTALLING THE APP:
+*INSTALLING THE APP:*
 
 Prerequisite is that you have git installed.
 
@@ -37,7 +37,7 @@ PPLibraryAuthToken = a github auth token generated from your account so that the
 You can either do all this install manually or you can run the provided install script. This will automatically set these properties from the properties file on your disk (with the exception of the auth token), clone your library repository to the given location and then generate an auth token from your github credentials. Unfortunately the latter part of this is on the path to deprecation (as it uses basic auth) so will not work forever.
 
 
-HOW THE APP WORKS:
+*HOW THE APP WORKS:*
 
 This consists of two fairly basic shell scripts:
 
@@ -58,7 +58,7 @@ This consists of two fairly basic shell scripts:
 - It is recommended, if you're updating the library, that you ensure that the item is in the exact state that you'd like to find it every time you open ProPresenter when you add it e.g. make sure it isn't in some strange arrangement/using an unusual template/covered in video backgrounds
 
 
-SETTING UP YOUR LIBRARY REPOSITORY:
+*SETTING UP YOUR LIBRARY REPOSITORY:*
 
 Please use the following repository structure:
 
@@ -78,14 +78,14 @@ If you wish changes to automatically be merged to master (rather than having a m
 
 
 
-RECOMMENDATIONS FOR KEEPING YOUR LIBRARY UNDER CONTROL:
+*RECOMMENDATIONS FOR KEEPING YOUR LIBRARY UNDER CONTROL:*
 
 1) Ensure that songs are in the exact state in which you would like to find them every time you open the software when you save back to the master library
 2) Ensure that there are no templates, media or backgrounds linked to songs when you save to the master library as these may not exist on the device that you sync down to (or may exist in a different location)
 
 
 
-EXPECTATIONS FOR HOW THE APP IS TO BE USED:
+*EXPECTATIONS FOR HOW THE APP IS TO BE USED:*
 
 - The expectation is that this application is used to always return your ProPresenter library to a known state and that event-specific changes aren't automatically left over in the library
 - As such, the expected user workflow is as follows:
