@@ -29,21 +29,6 @@ function Sync-MasterLibrary {
     }
 }
 
-function Remove-LeftoverPlaylistData {
-    Write-Debug 'Removing playlist data...'
-    Remove-Item –Path "$env:PPPlayListLocation\\*" -include *.pro6pl –recurse -ErrorAction Ignore
-    Write-Debug 'Removed.'
-    Write-Debug 'Copying default playlist file across...'
-    Copy-Item -Path "$env:PPLibraryPath\\Config Templates\\windows_Default.pro6pl" -Destination $env:PPPlayListLocation
-    Write-Debug 'Copied.'
-}
-
-function Copy-LabelTemplateFile {
-    Write-Debug 'Copying label templates across...'
-    Copy-Item -Path "$env:PPLibraryPath\\Config Templates\\windows_LabelsPreferences.pro6pref" -Destination $env:PPLabelLocation
-    Write-Debug 'Copied.'
-}
-
 function Wait-ForUserResponse {
     Param(
         [Parameter(Mandatory=$true)][string]$UserActionRequired,
@@ -250,85 +235,6 @@ function New-PullRequest {
     }
 }
 
-function Get-UUIDRegen {
-    Param(
-        [Parameter(Mandatory=$true)][string]$FilePath
-    )
-
-    Write-Debug "Checking whether only changes are UUID regenerations..."
-    $diff = git -C $env:PPLibraryPath diff --word-diff=porcelain $FilePath
-    $diffFilter = $diff | Where-Object { ($_ -match '^@@') -or ($_ -match '^\+') -or ($_ -match '^\-') }
-    
-    $quantityRegex = '^@@ \-[0-9]+,7 \+[0-9]+,7 @@$'
-    $minusRegex = '^\-UUID="[a-z, A-Z, 0-9]{8}-[a-z, A-Z, 0-9]{4}-[a-z, A-Z, 0-9]{4}-[a-z, A-Z, 0-9]{4}-[a-z, A-Z, 0-9]{12}"$'
-    $plusRegex = '^\+UUID="[a-z, A-Z, 0-9]{8}-[a-z, A-Z, 0-9]{4}-[a-z, A-Z, 0-9]{4}-[a-z, A-Z, 0-9]{4}-[a-z, A-Z, 0-9]{12}"$'
-
-    $uuidRegen = $true
-
-    for ($i=2; $i -lt $diffFilter.Length; $i++) {
-        if (($i + 1) % 3 -eq 0) {
-            if ($diffFilter[$i] -notmatch $quantityRegex) {
-                $uuidRegen = $false
-            }
-        } elseif ($i % 3 -eq 0) {
-            if ($diffFilter[$i] -notmatch $minusRegex) {
-                $uuidRegen = $false
-            }
-        } elseif (($i - 1) % 3 -eq 0) {
-            if ($diffFilter[$i] -notmatch $plusRegex) {
-                $uuidRegen = $false
-            }
-        }
-    }
-    Write-Debug "UUIDRegen? $uuidRegen"
-
-    return $uuidRegen
-}
-
-function Format-XmlFile {
-    Param(
-        [Parameter(Mandatory=$true)][string]$FilePath
-    )
-    
-    if (-not (Test-Path "$env:PPLibraryPath/$FilePath")) {
-        Write-Error "$env:PPLibraryPath/$FilePath was not found."
-    }
- 
-    $fullXmlPath = (Resolve-Path "$env:PPLibraryPath/$FilePath")
-    [xml]$xml = Get-Content $fullXmlPath
-    Write-Debug "Sorting $fullXmlPath"
-    # Sort attributes in ASCII sequence
-    Sort-XmlAttributes $xml.DocumentElement
-    $xml.Save($fullXmlPath)
-    # Replace funny spaces before end tags
-    ((Get-Content $fullXmlPath -raw) -replace ' />', '/>') | Set-Content -Path $fullXmlPath
-}
-
-function Sort-XmlAttributes {
-    Param(
-        [Parameter(Mandatory=$true)]$node
-    )
-
-    if ($node.HasChildNodes) {
-        foreach ($child in $node.ChildNodes) {
-            Sort-XmlAttributes $child
-        }
-    }
-    
-    if ($node.GetType() -eq [System.Xml.XmlElement]) {
-        $sortedAttributes = New-Object 'System.Collections.Generic.SortedDictionary[[string],[string]]' -ArgumentList ([System.StringComparer]::Ordinal)
-        $node.Attributes | ForEach-Object { $sortedAttributes[$_.Name] = $_.Value }
-        $node.RemoveAllAttributes()
-
-        foreach ($key in $sortedAttributes.Keys) {
-            Write-Debug $key
-            $xmlattrib = $node.OwnerDocument.CreateAttribute($key)
-            $xmlattrib.Value = $sortedAttributes[$key]
-            $nodeAtts = $node.Attributes.Append($xmlattrib)
-        }
-    }
-}
-
 function Set-ConsoleFormat {
     $console = $host.UI.RawUI
     $console.WindowTitle = 'ProPresenter Library Wrapper'
@@ -389,8 +295,6 @@ function Write-HostWithPadding {
 
 Export-ModuleMember -Function Start-ProPresenter
 Export-ModuleMember -Function Sync-MasterLibrary
-Export-ModuleMember -Function Remove-LeftoverPlaylistData
-Export-ModuleMember -Function Copy-LabelTemplateFile
 Export-ModuleMember -Function Wait-ForUserResponse
 Export-ModuleMember -Function Add-GetConsoleWindowFunction
 Export-ModuleMember -Function New-LockFile
@@ -405,8 +309,6 @@ Export-ModuleMember -Function Invoke-ChangeCommit
 Export-ModuleMember -Function Invoke-ChangePush
 Export-ModuleMember -Function Invoke-BranchPush
 Export-ModuleMember -Function New-PullRequest
-Export-ModuleMember -Function Get-UUIDRegen
-Export-ModuleMember -Function Format-XmlFile
 Export-ModuleMember -Function Set-ConsoleFormat
 Export-ModuleMember -Function Get-WorkingBranchName
 Export-ModuleMember -Function Write-HostWithPadding

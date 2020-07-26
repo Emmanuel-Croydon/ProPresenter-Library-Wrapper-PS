@@ -20,8 +20,6 @@ while (($repeat -eq $true) -or ($firstTry -eq $true)) {
 
     if ($response -eq 'y') {
         Sync-MasterLibrary | Out-Null
-        Remove-LeftoverPlaylistData
-        Copy-LabelTemplateFile
         $proc = Start-ProPresenter
     } elseIf ($response -eq 'n') {
         $proc = Start-ProPresenter

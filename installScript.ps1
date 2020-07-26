@@ -176,8 +176,10 @@ $repoPath = $config['PPRepoLocation']
 $libraryDir = $config['PPLibraryPath']
 
 if ((Test-Path -Path $libraryDir) -eq $True) {
-    $gitwd = $libraryDir.Substring(0, $libraryDir.lastIndexOf('\'))
-    git -C $gitwd clone "https://github.com/$repoPath.git" | Write-Host 
+    git -C $libraryDir init
+    git -C $libraryDir remote add origin "https://github.com/$repoPath.git"
+    git -C $libraryDir fetch
+    git -C $libraryDir checkout -t origin/master -f
 } else {
     Write-Error -Message 'Could not find library directory' -ErrorAction Continue
 }
