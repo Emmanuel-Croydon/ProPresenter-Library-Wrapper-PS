@@ -108,6 +108,18 @@ function Copy-TemplateShortcutToLocation {
     }
 }
 
+function Copy-IconToLocation {
+    $wd = Get-Location
+    $path = "%SystemRoot%\System32"
+    $icon = "$wd\Pro7_wrapper.ico"
+
+    if ((Test-Path -Path $path) -eq $True) {
+        Copy-Item -Path $icon -Destination $path
+    } else {
+        Write-Error -Message 'Could not find icon location' -ErrorAction Continue
+    }
+}
+
 
 function Bastardise-OriginalPropresenterShortcut {
     Param(
@@ -164,6 +176,7 @@ Add-EnvironmentVariable -VariableName 'GIT_REDIRECT_STDERR' -VariableValue '2>&1
 
 Edit-TemplateShortcut $config['ProPresenterEXE']
 Copy-TemplateShortcutToLocation $config['PPShortcutLocation']
+Copy-IconToDefaultLocation
 Bastardise-OriginalPropresenterShortcut $config['PPShortcutLocation']
 Write-Host 'Successfully copied ProPresenter Library Wrapper shortcut to Start Menu'
 
