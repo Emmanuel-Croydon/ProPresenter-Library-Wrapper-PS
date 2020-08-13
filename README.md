@@ -26,13 +26,13 @@ In both cases, there are some system variables that are required for the app to 
 
 Most of these properties are fairly self-explanatory. Where properties are Windows filepaths, please escape backslashes with another backslash. No need to escape spaces.
 
-ProPresenterEXE (windows only) = the filepath to the ProPresenter executable file on your machine
-PPLibraryPath = full filepath to the location of your library repository on the machine
-PPRepolocation = the URL path to the library repository on github (i.e. everything after www.github.com if you navigate to your library repo)
-PPLabelLocation = the location of your labels file on the disk
-PPPlaylistLocation = the location of your playlist file on disk
-PPLiveDevice = whether or not this device is expected to be used for live playback
-PPLibraryAuthToken = a github auth token generated from your account so that the app can open pull requests to your library repository. Details of how to generate this can be found here: https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token
+- ProPresenterEXE (windows only) = the filepath to the ProPresenter executable file on your machine
+- PPLibraryPath = full filepath to the location of your library repository on the machine
+- PPRepolocation = the URL path to the library repository on github (i.e. everything after www.github.com if you navigate to your library repo)
+- PPLabelLocation = the location of your labels file on the disk
+- PPPlaylistLocation = the location of your playlist file on disk
+- PPLiveDevice = whether or not this device is expected to be used for live playback
+- PPLibraryAuthToken = a github auth token generated from your account so that the app can open pull requests to your library repository. Details of how to generate this can be found here: https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token
 
 You can either do all this install manually or you can run the provided install script. This will automatically set these properties from the properties file on your disk (with the exception of the auth token), clone your library repository to the given location and then generate an auth token from your github credentials. Unfortunately the latter part of this is on the path to deprecation (as it uses basic auth) so will not work forever.
 
@@ -60,7 +60,7 @@ This consists of two fairly basic shell scripts:
 
 ## SETTING UP YOUR LIBRARY REPOSITORY:
 
-Please use the following repository structure:
+If you are using Pro6, please use the following repository structure:
 
 ROOT<br>
 |___Config Templates<br>
@@ -72,7 +72,9 @@ ROOT<br>
 |___Library 2<br>
 etc.
 
-The config templates folder will contain a default set of playlists (recommend empty, and your labels files for each OS). Please name as indicated above.
+For pro6, the config templates folder will contain a default set of playlists (recommend empty, and your labels files for each OS). Please name as indicated above.
+
+If you are using Pro7, then your repository should be structured as the default Pro7 directory is in your Documents directory. I recommend that you write a .gitignore file and ignore the Media directory as well as config ones (in the latter case you run the risk of trying to sync machine-specific settings). If you already have a repository set up then the install script will automatically pull it into your Pro7 directory.
 
 If you wish changes to automatically be merged to master (rather than having a manual approval) then you may wish to set up a github action to automatically merge pull requests e.g. https://github.com/marketplace/actions/simple-merge
 
