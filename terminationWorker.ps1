@@ -14,7 +14,7 @@ dir $env:PPLibraryPath | ForEach-Object -Process {
     $status = git -C $env:PPLibraryPath status "$directory" --porcelain=v1
     Write-Debug "STATUS: $status"
 
-    if (($status.Count -gt 0) -and ((Wait-ForUserResponse -UserActionRequired "Make changes to '$directory'`?") -eq 'y') -and ($directory -ne 'Playlists')) {
+    if (($status.Count -gt 0) -and ($directory -ne 'Playlists') -and ((Wait-ForUserResponse -UserActionRequired "Make changes to '$directory'`?") -eq 'y')) {
 
         $status | ForEach-Object -Process {
             $CommitBool = 'n'
