@@ -14,45 +14,73 @@ dir $env:PPLibraryPath | ForEach-Object -Process {
     $status = git -C $env:PPLibraryPath status "$directory" --porcelain=v1
     Write-Debug "STATUS: $status"
 
-    if (($status.Count -gt 0) -and ($directory -ne 'Playlists') -and ((Wait-ForUserResponse -UserActionRequired "Make changes to '$directory'`?") -eq 'y')) {
+    $changeTypes = @('Added', 'Modified', 'Removed', 'Unknown')
 
-        $status | ForEach-Object -Process {
-            $CommitBool = 'n'
+    foreach ($ChangeType in $changeTypes) {
+        if ($ChangeType -eq 'Added') {
+            $matcher = '^\?\? '
+            $DirLevelMessage = "Add items to '$directory'`?"
+            $FileLevelMessage = "    - Add '{FilePath}'`?"
+        }
+        elseif ($ChangeType -eq 'Modified') {
+            $matcher = '^ M '
+            $DirLevelMessage = "Modify items in '$directory'`?"
+            $FileLevelMessage = "    - Modify '{FilePath}'`?"
+        }
+        elseif ($ChangeType -eq 'Removed') {
+            $matcher = '^ D '
+            $DirLevelMessage = "Remove items from '$directory'`?"
+            $FileLevelMessage = "    - Remove '{FilePath}'`?"
+        }
+        elseif ($ChangeType -eq 'Unknown') {
+            $matcher = '^(?!\?\? .*$)(?! D .*$)(?! M .*$).*'
+        }
 
-            if ($_ -match '^\?\? ') {
-                $ChangeType = 'Added'
-                $FilePath = Get-UntrackedFilePath -StatusString $_
-                $CommitBool = Wait-ForUserResponse -UserActionRequired "Add '$FilePath'`?"
-            }
-            elseif ($_ -match '^ M ') {
-                $ChangeType = 'Modified'
-                $FilePath = Get-TrackedFilePath -StatusString $_
-                $CommitBool = Wait-ForUserResponse -UserActionRequired "Modify '$FilePath'`?"
-            }
-            elseif ($_ -match '^ D ') {
-                $ChangeType = 'Removed'
-                $FilePath = Get-TrackedFilePath -StatusString $_
-                $CommitBool = Wait-ForUserResponse -UserActionRequired "Remove '$FilePath'`?"
-            }
-            else {
-                Write-HostWithPadding 'Unknown object - please contact support'
+        $statusFilter = $status | Where-Object {$_ -match "$matcher"}
+        Write-Debug "ChangeType: $ChangeType"
+        Write-Debug "statusFilter: $statusFilter"
+
+        if (($ChangeType -eq 'Unknown') -and ($statusFilter.Count -gt 0)) {
+            Write-HostWithPadding 'Unknown change object detected - please contact support'
+        }
+
+        if (($ChangeType -ne 'Unknown') -and ($statusFilter.Count -gt 0) -and ($directory -ne 'Playlists') -and ((Wait-ForUserResponse -UserActionRequired "$DirLevelMessage") -eq 'y')) {
+            
+            Write-HostWithPadding "`n"
+
+            $statusFilter | ForEach-Object -Process {
                 $CommitBool = 'n'
-            }
 
-
-            if ($CommitBool -eq 'y') {
-
-                if ($BranchName -eq 'master') {
-                    $BranchName = New-Branch
-                    Invoke-ChangeCommit -FilePath $FilePath -ChangeType $ChangeType
+                if (($_ -match "$matcher") -and ($ChangeType -eq 'Added')) {
+                    $FilePath = Get-UntrackedFilePath -StatusString $_
+                    $CommitBool = Wait-ForUserResponse -UserActionRequired $("$FileLevelMessage" -replace '{FilePath}', "$FilePath")
+                }
+                elseif ($_ -match "$matcher") {
+                    $FilePath = Get-TrackedFilePath -StatusString $_
+                    $CommitBool = Wait-ForUserResponse -UserActionRequired $("$FileLevelMessage" -replace '{FilePath}', "$FilePath")
                 }
                 else {
-                    Invoke-ChangeCommit -FilePath $FilePath -ChangeType $ChangeType
+                    Write-HostWithPadding 'Unknown object - please contact support'
+                    $CommitBool = 'n'
+                }
+
+
+                if ($CommitBool -eq 'y') {
+
+                    if ($BranchName -eq 'master') {
+                        $BranchName = New-Branch
+                        Invoke-ChangeCommit -FilePath $FilePath -ChangeType $ChangeType
+                    }
+                    else {
+                        Invoke-ChangeCommit -FilePath $FilePath -ChangeType $ChangeType
+                    }
+                }
+                elseif ($CommitBool -eq 'n') {
+                    # Do nothing
                 }
             }
-            elseif ($CommitBool -eq 'n') {
-                # Do nothing
-            }
+
+            Write-HostWithPadding "`n"
         }
     }
 }
