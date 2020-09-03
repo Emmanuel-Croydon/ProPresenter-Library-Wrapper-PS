@@ -110,7 +110,7 @@ function Copy-TemplateShortcutToLocation {
 
 function Copy-IconToDefaultLocation {
     $wd = Get-Location
-    $path = "%SystemRoot%\System32"
+    $path = "$env:SystemRoot\System32"
     $icon = "$wd\Pro7_wrapper.ico"
 
     if ((Test-Path -Path $path) -eq $True) {
