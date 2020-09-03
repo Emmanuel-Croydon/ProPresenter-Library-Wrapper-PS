@@ -108,7 +108,7 @@ function Copy-TemplateShortcutToLocation {
     }
 }
 
-function Copy-IconToLocation {
+function Copy-IconToDefaultLocation {
     $wd = Get-Location
     $path = "%SystemRoot%\System32"
     $icon = "$wd\Pro7_wrapper.ico"
@@ -177,7 +177,7 @@ Add-EnvironmentVariable -VariableName 'GIT_REDIRECT_STDERR' -VariableValue '2>&1
 Edit-TemplateShortcut $config['ProPresenterEXE']
 Copy-TemplateShortcutToLocation $config['PPShortcutLocation']
 Copy-IconToDefaultLocation
-Bastardise-OriginalPropresenterShortcut $config['PPShortcutLocation']
+# Bastardise-OriginalPropresenterShortcut $config['PPShortcutLocation']
 Write-Host 'Successfully copied ProPresenter Library Wrapper shortcut to Start Menu'
 
 Replace-CommonProPresenterShortcuts
@@ -196,5 +196,10 @@ if ((Test-Path -Path $libraryDir) -eq $True) {
 } else {
     Write-Error -Message 'Could not find library directory' -ErrorAction Continue
 }
+Unblock-File .\orchestrationWorker.ps1
+Unblock-File .\startupWorker.ps1
+Unblock-File .\terminationWorker.ps1
+Unblock-File .\library.psm1
+
 
 Start-Sleep(5)
