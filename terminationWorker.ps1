@@ -36,7 +36,7 @@ dir $env:PPLibraryPath | ForEach-Object -Process {
             $matcher = '^(?!\?\? .*$)(?! D .*$)(?! M .*$).*'
         }
 
-        $statusFilter = $status | Where-Object {$_ -match "$matcher"}
+        $statusFilter = $status | Where-Object {($_ -match "$matcher") -and ($_ -notmatch "Playlists/Library")}
         Write-Debug "ChangeType: $ChangeType"
         Write-Debug "statusFilter: $statusFilter"
 
