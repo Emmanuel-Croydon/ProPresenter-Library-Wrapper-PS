@@ -44,7 +44,7 @@ dir $env:PPLibraryPath | ForEach-Object -Process {
             Write-HostWithPadding 'Unknown change object detected - please contact support'
         }
 
-        if (($ChangeType -ne 'Unknown') -and ($statusFilter.Count -gt 0) -and ($directory -ne 'Playlists') -and ((Wait-ForUserResponse -UserActionRequired "$DirLevelMessage") -eq 'y')) {
+        if (($ChangeType -ne 'Unknown') -and ($statusFilter.Count -gt 0) -and ((Wait-ForUserResponse -UserActionRequired "$DirLevelMessage") -eq 'y')) {
             
             Write-HostWithPadding "`n"
 
@@ -57,7 +57,11 @@ dir $env:PPLibraryPath | ForEach-Object -Process {
                 }
                 elseif ($_ -match "$matcher") {
                     $FilePath = Get-TrackedFilePath -StatusString $_
-                    $CommitBool = Wait-ForUserResponse -UserActionRequired $("$FileLevelMessage" -replace '{FilePath}', "$FilePath")
+                    if ("$FilePath" -ne 'Playlists/Library') {
+                        $CommitBool = Wait-ForUserResponse -UserActionRequired $("$FileLevelMessage" -replace '{FilePath}', "$FilePath")
+                    } else {
+                        $CommitBool = 'n'
+                    }
                 }
                 else {
                     Write-HostWithPadding 'Unknown object - please contact support'
