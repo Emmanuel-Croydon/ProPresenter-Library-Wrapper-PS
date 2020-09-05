@@ -210,7 +210,7 @@ function New-PullRequest {
     $ReqHeaders = 
     @{
         'Accept' = 'application/vnd.github.v3+json';
-        'Authorization' = "token$env:PPLibraryAuthToken"
+        'Authorization' = "token $env:PPLibraryAuthToken"
     }
 
     $ReqBody = 
