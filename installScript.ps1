@@ -14,35 +14,46 @@ function Get-AuthToken {
     # Use whichever TLS site requires
     [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
     
-    $GitHubAuthUri = 'https://api.github.com/authorizations'
-    $User = "$env:COMPUTERNAME/$env:USERNAME"
+    $GitHubOauthDeviceFlowUri = 'https://github.com/login/device/code?client_id=9603bcd797e8961affd5&scope=repo'
+    $response = Invoke-RestMethod -Uri $GitHubOauthDeviceFlowUri -Method 'Post' -ErrorAction Stop
     
-    $Base64String = "$(Read-Host 'Username'):$(Read-Host -AsSecureString 'Password' | 
-                     foreach {[System.Runtime.InteropServices.Marshal]::PtrToStringAuto([System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($_))})" | 
-                     foreach { [System.Convert]::ToBase64String([char[]]$_) }
-
-    $AuthHeaders = 
-    @{
-        'Accept' = 'application/vnd.github.v3+json';
-        'Authorization' = "Basic $Base64String"
+    $responseHash = @{}
+    Foreach ($param in $response.Split('&')) {
+        $responseHash += ConvertFrom-StringData $param
     }
 
-    $AuthBody = 
-    @{
-        'scopes' = @("repo");
-        'note' = "$User ProPresenter-Library-Wrapper"
+    $verificationUri = [System.Web.HttpUtility]::UrlDecode($responseHash.verification_uri)
+    $userCode = $responseHash.user_code
+    $deviceCode = $responseHash.device_code
+
+    Write-Host "Please navigate to this URL $verificationUri and enter the following code: $userCode"
+
+    $timer =  [system.diagnostics.stopwatch]::StartNew()
+    $expiryTime = $responseHash.expires_in -as [int]
+    $pollInterval = $responseHash.interval -as [int]
+    $authorized = $false
+
+    $GitHubOauthPollAuthorizationUri = "https://github.com/login/oauth/access_token?client_id=9603bcd797e8961affd5&device_code=$deviceCode&grant_type=urn:ietf:params:oauth:grant-type:device_code"
+    
+    While(($timer.Elapsed.TotalSeconds -lt $expiryTime) -and ($authorized -eq $false)) {
+        $authResponse = Invoke-RestMethod -Uri $GitHubOauthPollAuthorizationUri -Method 'Post' -ErrorAction Stop
+
+        $authResponseHash = @{}
+        Foreach ($param in $authResponse.Split('&')) {
+            $authResponseHash += ConvertFrom-StringData $param
+        }
+
+        $authorized = $authResponseHash.ContainsKey('access_token')
+
+        Start-Sleep $pollInterval
     }
 
-    try {
-        $Token = Invoke-RestMethod -Uri $GitHubAuthUri -Method 'Post'-ContentType 'application/json' -Headers $AuthHeaders -Body ($AuthBody | ConvertTo-Json) -ErrorAction Stop
-        Write-Host "Successfully added Github API authentication."
-    } catch {
-        Write-Error -Message 'Failed to add authentication. Please check your credentials and your network connection then retry.' -ErrorAction Continue
-        Start-Sleep(5)
+    if ($authorized) {
+        return $authResponseHash.access_token
+    } else {
+        Write-Error "Authorization has failed before expiry, please try again."
         exit
     }
-
-    return $Token.token
 }
 
 
@@ -141,25 +152,27 @@ function Bastardise-OriginalPropresenterShortcut {
 function Replace-CommonProPresenterShortcuts {
     
     $UserDesktopPath = [Environment]::GetFolderPath("Desktop")
-    $UserDesktopShortcut = "$UserDesktopPath\ProPresenter 6.lnk"
+    $UserDesktopShortcut = "$UserDesktopPath\ProPresenter.lnk"
     $SharedDesktopPath = [Environment]::GetFolderPath("CommonDesktopDirectory")
-    $SharedDesktopShortcut = "$SharedDesktopPath\ProPresenter 6.lnk"
+    $SharedDesktopShortcut = "$SharedDesktopPath\ProPresenter.lnk"
 
     if ((Test-Path -Path $UserDesktopShortcut) -eq $True) {
         Remove-Item $UserDesktopShortcut
-        Copy-TemplateShortcutToLocation $UserDesktopPath
-        Write-Host 'Successfully copied ProPresenter Library Wrapper shortcut to User Desktop'
     } else {
-        Write-Error -Message 'Could not find shortcut on desktop' -ErrorAction Continue
+        Write-Warning -Message 'Could not find shortcut on desktop' -ErrorAction Continue
     }
+
+    Copy-TemplateShortcutToLocation $UserDesktopPath
+    Write-Host 'Successfully copied ProPresenter Library Wrapper shortcut to User Desktop'
 
     if ((Test-Path -Path $SharedDesktopShortcut) -eq $True) {
         Remove-Item $SharedDesktopShortcut
-        Copy-TemplateShortcutToLocation $SharedDesktopPath
-        Write-Host 'Successfully copied ProPresenter Library Wrapper shortcut to Shared Desktop'
     } else {
-        Write-Error -Message 'Could not find shortcut on shared desktop' -ErrorAction Continue
+        Write-Warning -Message 'Could not find shortcut on shared desktop' -ErrorAction Continue
     }
+
+    Copy-TemplateShortcutToLocation $SharedDesktopPath
+    Write-Host 'Successfully copied ProPresenter Library Wrapper shortcut to Shared Desktop'
 }
 
 
@@ -189,6 +202,11 @@ $repoPath = $config['PPRepoLocation']
 $libraryDir = $config['PPLibraryPath']
 
 if ((Test-Path -Path $libraryDir) -eq $True) {
+    
+    if ((Test-Path -Path "$libraryDir\\.git") -eq $True) {
+        Remove-Item "$libraryDir\\.git" -Recurse -Force
+    }
+
     git -C $libraryDir init
     git -C $libraryDir remote add origin "https://github.com/$repoPath.git"
     git -C $libraryDir fetch
