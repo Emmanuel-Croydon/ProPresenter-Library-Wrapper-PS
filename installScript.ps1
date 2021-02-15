@@ -22,7 +22,8 @@ function Get-AuthToken {
         $responseHash += ConvertFrom-StringData $param
     }
 
-    $verificationUri = [System.Web.HttpUtility]::UrlDecode($responseHash.verification_uri)
+    Write-Host $responseHash.verification_uri
+    $verificationUri = [System.Net.WebUtility]::UrlDecode($responseHash.verification_uri)
     $userCode = $responseHash.user_code
     $deviceCode = $responseHash.device_code
 
@@ -96,7 +97,7 @@ function Edit-TemplateShortcut {
     $obj = New-Object -ComObject WScript.Shell
     $link = $obj.CreateShortcut($path)
     
-    $link.Arguments = "-File $targetpath"
+    $link.Arguments = "-File ""$targetpath"""
     $link.WorkingDirectory = "$wd"
     $link.IconLocation = "$IconLocation,0"
 
@@ -187,9 +188,9 @@ Foreach($Key in $config.Keys) {
 
 Add-EnvironmentVariable -VariableName 'GIT_REDIRECT_STDERR' -VariableValue '2>&1'
 
-Edit-TemplateShortcut $config['ProPresenterEXE']
-Copy-TemplateShortcutToLocation $config['PPShortcutLocation']
 Copy-IconToDefaultLocation
+Edit-TemplateShortcut "$env:SystemRoot\System32\Pro7_Wrapper.ico"
+Copy-TemplateShortcutToLocation $config['PPShortcutLocation']
 # Bastardise-OriginalPropresenterShortcut $config['PPShortcutLocation']
 Write-Host 'Successfully copied ProPresenter Library Wrapper shortcut to Start Menu'
 
