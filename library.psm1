@@ -112,7 +112,13 @@ function Get-UntrackedFilePath {
         [Parameter(Mandatory=$true)][string]$StatusString
     )
 
-    return $StatusString | Select-String -Pattern "(?<=\?\? )(.*)" | foreach { $_.matches }
+    $Filepath = $StatusString | Select-String -Pattern "(?<=[""'])(.*)(?=[""'])" | foreach { $_.matches }
+
+    if ($Filepath -eq $Null) {
+        return $StatusString | Select-String -Pattern "(?<=\?\? )(.*)" | foreach { $_.matches }
+    } else {
+        return $Filepath
+    }
 }
 
 function Get-TrackedFilePath {
