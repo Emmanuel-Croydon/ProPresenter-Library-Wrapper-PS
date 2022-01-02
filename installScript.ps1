@@ -11,8 +11,8 @@ $ErrorActionPreference = 'Stop'
 
 function Get-AuthToken {
 
-    # Use whichever TLS site requires
-    [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
+    # Use TLS 1.2
+    [Net.ServicePointManager]::SecurityProtocol = "tls12"
     
     $GitHubOauthDeviceFlowUri = 'https://github.com/login/device/code?client_id=9603bcd797e8961affd5&scope=repo'
     $response = Invoke-RestMethod -Uri $GitHubOauthDeviceFlowUri -Method 'Post' -ErrorAction Stop
@@ -132,24 +132,6 @@ function Copy-IconToDefaultLocation {
     }
 }
 
-
-function Bastardise-OriginalPropresenterShortcut {
-    Param(
-        [Parameter(Mandatory=$true)][string]$ShortcutLocation
-    )
-
-	$OriginalPropresenterShortcut = "$ShortcutLocation\ProPresenter 6.lnk";
-	
-	if ((Test-Path -Path $OriginalPropresenterShortcut) -eq $True) {
-		Rename-Item -Path $OriginalPropresenterShortcut -NewName "___PP6exe_DONOTUSE___.lnk"
-	} elseif ((Test-Path -Path "$ShortcutLocation\___PP6exe_DONOTUSE___.lnk") -eq $True) {
-        Write-Host 'Original ProPresenter shortcut already renamed'
-    } else {
-        Write-Error -Message 'Could not find original ProPresenter shortcut' -ErrorAction Continue
-    }
-}
-
-
 function Replace-CommonProPresenterShortcuts {
     
     $UserDesktopPath = [Environment]::GetFolderPath("Desktop")
@@ -191,7 +173,6 @@ Add-EnvironmentVariable -VariableName 'GIT_REDIRECT_STDERR' -VariableValue '2>&1
 Copy-IconToDefaultLocation
 Edit-TemplateShortcut "$env:SystemRoot\System32\Pro7_Wrapper.ico"
 Copy-TemplateShortcutToLocation $config['PPShortcutLocation']
-# Bastardise-OriginalPropresenterShortcut $config['PPShortcutLocation']
 Write-Host 'Successfully copied ProPresenter Library Wrapper shortcut to Start Menu'
 
 Replace-CommonProPresenterShortcuts

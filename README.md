@@ -31,10 +31,11 @@ Most of these properties are fairly self-explanatory. Where properties are Windo
 - PPRepolocation = the URL path to the library repository on github (i.e. everything after www.github.com if you navigate to your library repo)
 - PPLabelLocation = the location of your labels file on the disk
 - PPPlaylistLocation = the location of your playlist file on disk
-- PPLiveDevice = whether or not this device is expected to be used for live playback
+- PPLiveDevice = whether or not this device is expected to be used for live playback (i.e. whether pulling is optional)
+- PPReadOnlyDevice = whether or not this device can be used to upload changes back to the library repository
 - PPLibraryAuthToken = a github auth token generated from your account so that the app can open pull requests to your library repository. Details of how to generate this can be found here: https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token
 
-You can either do all this install manually or you can run the provided install script. This will automatically set these properties from the properties file on your disk (with the exception of the auth token), clone your library repository to the given location and then generate an auth token from your github credentials. Unfortunately the latter part of this is on the path to deprecation (as it uses basic auth) so will not work forever.
+You can either do all this install manually or you can run the provided install script. This will automatically set these properties from the properties file on your disk (with the exception of the auth token), clone your library repository to the given location and then help you to generate an auth token from your github credentials.
 
 
 ## HOW THE APP WORKS:
@@ -51,9 +52,9 @@ This consists of two fairly basic shell scripts:
 
 2) When you close ProPresenter
 
-- This script runs when it detects that ProPresenter has been closed
+- This script runs when it detects that ProPresenter has been closed (as long as it's not a read-only device)
 - This essentially cycles through files in the library that have been updated during your session and asks if you would like to save the changes you've made on them back to the master version of your library (i.e. the git repository)
-- Technically, this actually works by pushing up a branch of your repository and openng a pull request against master. This could allow for approvals of changes if you so desire, but you can also set up a github action on your master repository to automatically manage the merges (e.g. using something like this https://github.com/marketplace/actions/simple-merge)
+- Technically, this actually works by pushing up a branch of your repository and opening a pull request against master. This could allow for approvals of changes if you so desire, but you can also set up a github action on your master repository to automatically manage the merges (e.g. using something like this https://github.com/marketplace/actions/simple-merge)
 - If there are any merge conflicts between someone's source branch and master then these will require manual resolution by someone with some knowledge of git.
 - It is recommended, if you're updating the library, that you ensure that the item is in the exact state that you'd like to find it every time you open ProPresenter when you add it e.g. make sure it isn't in some strange arrangement/using an unusual template/covered in video backgrounds
 

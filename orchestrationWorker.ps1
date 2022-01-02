@@ -74,11 +74,13 @@ $ExitCode = $ProPresenterProc.ExitCode
 Write-Debug "Exit code: $ExitCode" 
 
 if ($ExitCode -eq 0) {
-    Invoke-Command -ScriptBlock {.\terminationWorker.ps1}
+    if ($env:PPReadOnlyDevice -eq 0) {
+        Invoke-Command -ScriptBlock {.\terminationWorker.ps1}
+    }
 } else {
     Write-HostWithPadding 'Program terminated unexpectedly'
 }
-
+Write-HostWithPadding 'Exiting...'
 Start-Sleep(5)
 Remove-LockFile
 exit
